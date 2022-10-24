@@ -1,0 +1,9 @@
+data/**
+.env
+encryption_data/**
+bibliography.txt
+#just a file I use for debugging
+debug/**
+
+#modules
+__pycache__/
