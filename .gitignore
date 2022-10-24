@@ -1,4 +1,5 @@
 data/**
+log/**
 .env
 encryption_data/**
 bibliography.txt
