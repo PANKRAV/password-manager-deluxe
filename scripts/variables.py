@@ -14,3 +14,13 @@ RAN_CHAR_SEQ = "hA#Fm&s%)0YanG$gQ3xylpvjB9f^M17S6eRCuqDZiwK*Ub!TLot4XV8@HONJ2rE5
 
 
 #PATHS
+
+
+
+
+#EXCEPTIONS
+class ReadOnly(Exception):
+    ...
+
+class BadValue(Exception):
+    ...
