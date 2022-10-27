@@ -3,6 +3,7 @@ log/**
 .env
 encryption_data/**
 bibliography.txt
+SETUP
 #just a file I use for debugging
 debug/**
 
