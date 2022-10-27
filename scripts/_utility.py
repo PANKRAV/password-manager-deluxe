@@ -87,13 +87,27 @@ def handle_file(path : Path, opt : str = "fetch", mode : str = "norm") -> dict:
 
 async def minimal_time(func, delay) :
     ...
+class Arg_Save_Wrapper :
+    def __init__(self, func : function) :
+        self.func = func
+
+    def logargs(self, *args, **kwargs) :
 
 
-def timeit(func : function, debug : bool = True, *args : List[function], **kwargs : Dict[function]
+        self.func.__call__(*args, *kwargs)
+
+
+
+def argssave(func : function) :
+    ...
+
+
+
+def timeit(func : function, debug : bool = True, verbose : bool = False, *args : List[function], **kwargs : Dict[function]
             ) -> function | List[function] :
 
     error_count = 0
-    erros = dict()
+    errors = dict()
     start_time = time.time()
     try :
         val = func()
@@ -101,6 +115,7 @@ def timeit(func : function, debug : bool = True, *args : List[function], **kwarg
     except Exception as ex :        
         error_count += 1
         print(f"{ex} occurred in 1st process")
+        errors[f"{error_count}.{val.__name__}()"] = ex
 
     if args != None or kwargs != None :
         val = list(val)
@@ -111,7 +126,7 @@ def timeit(func : function, debug : bool = True, *args : List[function], **kwarg
                 val.append(_func())
             except Exception as ex:
                 print(f"{ex} occured in No.{idx} process ({_func.__name__}())")
-
+                errors[f"{error_count}.{_func.__name__}()"] = ex
 
 
         for idx, item in enumerate(kwargs.items(), start = 2 + len(args)) :
@@ -121,12 +136,16 @@ def timeit(func : function, debug : bool = True, *args : List[function], **kwarg
                 print(f"No.{idx} ({_func.__name__}()) {key} process executed successfully")
             except Exception as ex:
                 print(f"{ex} occured in No.{idx} {key} process ({_func.__name__}())")
+                errors[f"{error_count}.{_func.__name__}()"] = ex
 
 
     _time = time.time() - start_time
     if debug :
         print(f"{1 + len(args) + len(kwargs)} Prosseses were executed in {_time} with {error_count} error(s)")
 
+    if verbose :
+        for key, ex in errors :
+            print(f"{ex} occured in {key} process")
 
     return val
 
