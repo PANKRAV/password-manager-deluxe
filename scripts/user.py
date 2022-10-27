@@ -53,7 +53,11 @@ class User :
 
     @property
     def data(self) :
-        return self.user_data(self.name, self.key, self.passwords, self.salt)
+        return {"name" : self.name, "key" : self.key, "pwd" : self.passwords, "salt" : self.salt}
+
+    @data.setter
+    def data(self, value) :
+        raise ReadOnly("data atributte cannot be setted")
 
 
 
@@ -74,6 +78,21 @@ class User :
 
 
 
+
+    @property
+    def enc_json(self) :
+        with Dir_Reset(Path("data/encryption_data")) :
+            with self.file.open("r") as f_r :
+                self._enc_json = f_r.read()
+            
+            return self._enc_json
+
+
+    @enc_json.setter
+    def enc_json(self, value) :
+        with Dir_Reset(Path("data/encryption_data")) :
+            with self.file.open("w") as f_w :
+                f_w.write(json.dumps(value, indent = 4))
 
     @staticmethod
     def users_gen() -> NamedTuple :

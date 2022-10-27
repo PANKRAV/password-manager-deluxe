@@ -1,5 +1,5 @@
 #MYMODULES
-from _utility import loop_switch, Dir_Reset, get_dirs
+from _utility import loop_switch, Dir_Reset, get_dirs, _init
 import encryption as enc
 import user
 from variables import MAINLOOP, USERLOOP, CHOICEFILTER
@@ -98,4 +98,5 @@ def main():
 
 if __name__ == "__main__" :
     os.system("Title Password manager")
+    _init()
     main()

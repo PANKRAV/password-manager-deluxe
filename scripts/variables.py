@@ -24,3 +24,12 @@ class ReadOnly(Exception):
 
 class BadValue(Exception):
     ...
+
+
+
+
+#LOOPS
+CHOICEFILTER = True
+SELFLOOP = True
+MAINLOOP = True
+USERLOOP = True
