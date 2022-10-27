@@ -1,10 +1,16 @@
+#PYTHONMODULES
 from ast import Tuple
 import json
 from pathlib import Path
 import asyncio
 import os
 import sys
+import time
+from typing import List, Dict
 
+
+#MYMODULES
+from variables import ReadOnly
 
 
 
@@ -83,13 +89,52 @@ async def minimal_time(func, delay) :
     ...
 
 
-def timeit(func) :
-    ...
+def timeit(func : function, debug : bool = True, *args : List[function], **kwargs : Dict[function]
+            ) -> function | List[function] :
 
+    error_count = 0
+    erros = dict()
+    start_time = time.time()
+    try :
+        val = func()
+
+    except Exception as ex :        
+        error_count += 1
+        print(f"{ex} occurred in 1st process")
+
+    if args != None or kwargs != None :
+        val = list(val)
+
+        for idx, _func in enumerate(args, start = 2) :
+            _func : function
+            try :
+                val.append(_func())
+            except Exception as ex:
+                print(f"{ex} occured in No.{idx} process ({_func.__name__}())")
+
+
+
+        for idx, item in enumerate(kwargs.items(), start = 2 + len(args)) :
+            key, _func = item
+            try :
+                val.append(_func().item())
+                print(f"No.{idx} ({_func.__name__}()) {key} process executed successfully")
+            except Exception as ex:
+                print(f"{ex} occured in No.{idx} {key} process ({_func.__name__}())")
+
+
+    _time = time.time() - start_time
+    if debug :
+        print(f"{1 + len(args) + len(kwargs)} Prosseses were executed in {_time} with {error_count} error(s)")
+
+
+    return val
 
 
 def loop_switch() -> None :
     os.system("cls||clear")
+
+
 
 
 class Dir_Reset :
@@ -100,16 +145,19 @@ class Dir_Reset :
         self.path = path
 
 
-    @classmethod
-    def from_string(cls, _path : str) :
-        _path = Path(_path)
-        return cls(_path)
+
+    @property
+    def dirs(self) :
+        return os.listdir(self.path)
+
+    @dirs.setter
+    def dirs(self, value) :
+        raise ReadOnly("dirs attribute cannot be setted")
 
 
     def __enter__(self) :
         if not self.path == self.root :       
             os.chdir(self.path)
-            self.dirs = os.listdir()
             return self
 
 
@@ -118,6 +166,11 @@ class Dir_Reset :
         if not self.path == self.root :
             os.chdir(Dir_Reset.root)
 
+
+    @classmethod
+    def from_string(cls, _path : str) :
+        _path = Path(_path)
+        return cls(_path)
 
 
 def get_dirs(path = os.getcwd()) -> Tuple :
