@@ -26,6 +26,10 @@ class BadValue(Exception):
     ...
 
 
+class UserFileExists(Exception):
+    ...
+
+
 
 
 #LOOPS
@@ -33,3 +37,8 @@ CHOICEFILTER = True
 SELFLOOP = True
 MAINLOOP = True
 USERLOOP = True
+
+
+
+#DATA
+user_data = dict()

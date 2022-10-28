@@ -1,6 +1,6 @@
 #MYMODULES
-from _utility import Dir_Reset, _quit
-from variables import MAINLOOP, USERLOOP, CHOICEFILTER, SELFLOOP, BadValue, ReadOnly
+from _utility import Dir_Reset, _quit, handle_file
+from variables import MAINLOOP, USERLOOP, CHOICEFILTER, SELFLOOP, BadValue, ReadOnly, UserFileExists, user_data
 import encryption as enc
 import json
 
@@ -40,6 +40,19 @@ class User :
 
 
 
+    @property
+    def status(self) :
+        if self.key == None :
+            return "Locked"
+        else :
+            return "Unlocked"
+
+
+    @status.setter
+    def status(self, value) :
+        raise ReadOnly("status atributte cannot be setted")
+
+
 
     @property
     def file(self) :
@@ -49,6 +62,7 @@ class User :
     @file.setter
     def file(self, value) :
         raise ReadOnly("file atributte cannot be setted")
+
 
 
     @property
@@ -94,15 +108,24 @@ class User :
             with self.file.open("w") as f_w :
                 f_w.write(json.dumps(value, indent = 4))
 
-    @staticmethod
-    def users_gen() -> NamedTuple :
-        ...
 
 
+    @property
+    def user_json(self) :
+        with Dir_Reset(Path("data/user_data")) :
+            with self.file.open("r") as f_r :
+                self._user_json = f_r.read()
+            
+            return self._user_json
 
-    @staticmethod
-    def user_init(name, key = None):
-        ...
+
+    @user_json.setter
+    def user_json(self, value) :
+        with Dir_Reset(Path("data/user_data")) :
+            with self.file.open("w") as f_w :
+                f_w.write(json.dumps(value, indent = 4))
+
+
 
 
     @classmethod
@@ -113,15 +136,97 @@ class User :
         elif isinstance(path, Path) :
             pass
         else :
-            raise BadValue("path parametre needs to be either str or Pathlib.Path")
+            raise BadValue("path parameter needs to be either str or Pathlib.Path")
 
 
         with Dir_Reset(Path("data/user_data")) :
-            with path.open("r") as f_r :
-                ...
+            with path.open("rt") as r_f :
+                txt = r_f.read()
+                _json = json.loads(txt)
+                name : str = _json["name"]
+                key : str = _json["key"] #hashed value
+                salt : str = _json["salt"]
+
+            return cls(name = name, key = key, salt = salt)
+        
+        return
 
 
-   
+
+
+    @classmethod
+    def user_init(cls, name, key = None):
+        
+        assert key != None
+        
+        key, salt = enc.salt(key)
+        key = enc.hash3(key)
+        _file = f"{name}.json"
+
+        with Dir_Reset.from_string("data/password_data") as cur :
+            if _file in cur :
+                raise UserFileExists("debug : data/password_data")
+
+            with Path(_file).open("xt") as w_f :
+                _json = json.dumps({})
+                w_f.write(_json)
+
+
+        with Dir_Reset.from_string("data/user_data") as cur :
+            if _file in cur :
+                raise UserFileExists("debug : data/user_data")
+
+            with Path(_file).open("xt") as w_f :
+                dct = {"name" : name, "key" : key, "salt" : salt}
+                _json = json.dumps(dct)
+                w_f.write(_json)
+
+        
+        return cls.from_file(_file)
+
+
+
+    @staticmethod
+    def users_gen() -> NamedTuple :
+        user_data = dict()
+
+
+        for user in cur.pathlibdirs :
+            user : Path
+            name = user.stem
+
+            with Dir_Reset.from_string("data/password_data") as cur :               
+
+                try :
+                    with user.open("rt") as r_f :
+                        txt = r_f.read()
+                        _json = json.loads(txt)
+                        pwd_count = len(_json)
+
+                except :
+                    handle_file(user, opt = "make")
+                    #log bug here
+
+            
+            with Dir_Reset.from_string("data/user_data") as cur :
+
+                try :
+                    with user.open("rt") as r_f:
+                        txt = r_f.read()
+                        _json = json.loads(txt)
+                        _key = _json["key"]
+                        _salt = _json["salt"]
+                
+                except :
+                    handle_file(user, opt = "make")
+                    #log bug here
+
+
+            user_data[name] = User(name, passwords = pwd_count, key = _key, salt = _salt)
+
+
+        
+        return user_data
 
 
     def get_pwd(self) -> None :

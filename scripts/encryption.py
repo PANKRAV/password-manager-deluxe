@@ -136,7 +136,7 @@ def hash3(ctx) -> str:
 
 def salt(ctx : str) -> str:
     salt = random_password(5)
-    return ctx + salt
+    return ctx + salt, salt
 
 
 

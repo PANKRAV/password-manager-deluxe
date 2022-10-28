@@ -93,13 +93,13 @@ class Arg_Save_Wrapper :
 
     def logargs(self, *args, **kwargs) :
 
-
+        self.func.args = f"*args = ({args}), *kwargs = ({kwargs})"
         self.func.__call__(*args, *kwargs)
 
 
 
 def argssave(func : function) :
-    ...
+    return Arg_Save_Wrapper(func).logargs
 
 
 
@@ -172,6 +172,15 @@ class Dir_Reset :
     @dirs.setter
     def dirs(self, value) :
         raise ReadOnly("dirs attribute cannot be setted")
+
+
+    @property
+    def pathlibdirs(self) :
+        return get_dirs(self.path)
+
+    @pathlibdirs.setter
+    def pathlibdirs(self, value) :
+        raise ReadOnly("pathlibdirs attribute cannot be setted")
 
 
     def __enter__(self) :
