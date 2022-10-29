@@ -1,9 +1,16 @@
 data/**
 log/**
+logs/**
 .env
 encryption_data/**
 bibliography.txt
 SETUP
+
+#Will remove these soon
+scripts/admin.py
+
+
+
 #just a file I use for debugging
 debug/**
 

@@ -30,6 +30,10 @@ class UserFileExists(Exception):
     ...
 
 
+class BadUserSetup(Exception):
+    ...
+
+
 
 
 #LOOPS
@@ -41,4 +45,8 @@ USERLOOP = True
 
 
 #DATA
-user_data = dict()
+def user_data_init() :
+    from user import User
+    global user_data
+    user_data = dict()
+    user_data = User.users_gen()

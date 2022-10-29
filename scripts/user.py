@@ -1,6 +1,6 @@
 #MYMODULES
 from _utility import Dir_Reset, _quit, handle_file
-from variables import MAINLOOP, USERLOOP, CHOICEFILTER, SELFLOOP, BadValue, ReadOnly, UserFileExists, user_data
+from variables import MAINLOOP, USERLOOP, CHOICEFILTER, SELFLOOP, BadValue, ReadOnly, UserFileExists, BadUserSetup
 import encryption as enc
 import json
 
@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 from collections import namedtuple
 from typing import List, NamedTuple
+import os
 
 
 Passwords = List[enc.Password]
@@ -17,12 +18,13 @@ class User :
     user_count = 0
     user_data = namedtuple("user_data", ["name", "key", "passwords", "salt"])
 
-    def __init__(self, name, key = None, salt = None, passwords = None | Passwords) -> None :
+    def __init__(self, name, key = None, salt = None, passwords = None | Passwords | int) -> None :
         self.name = name
         self.key = key
         self.passwords = passwords
         self.salt = salt
         self.ecnryption = None
+        self.key_check = False
 
 
         User.user_count += 1
@@ -40,12 +42,13 @@ class User :
 
 
 
+    #mostly for debugging purposes
     @property
     def status(self) :
-        if self.key == None :
-            return "Locked"
-        else :
+        if self.check_key() :
             return "Unlocked"
+        else :
+            return "Locked"
 
 
     @status.setter
@@ -162,9 +165,9 @@ class User :
         key, salt = enc.salt(key)
         key = enc.hash3(key)
         _file = f"{name}.json"
-
+        print(os.getcwd())
         with Dir_Reset.from_string("data/password_data") as cur :
-            if _file in cur :
+            if _file in cur.dirs :
                 raise UserFileExists("debug : data/password_data")
 
             with Path(_file).open("xt") as w_f :
@@ -173,12 +176,21 @@ class User :
 
 
         with Dir_Reset.from_string("data/user_data") as cur :
-            if _file in cur :
+            if _file in cur.dirs :
                 raise UserFileExists("debug : data/user_data")
 
             with Path(_file).open("xt") as w_f :
                 dct = {"name" : name, "key" : key, "salt" : salt}
                 _json = json.dumps(dct)
+                w_f.write(_json)
+
+
+        with Dir_Reset.from_string("data/encryption_data") as cur :
+            if _file in cur.dirs :
+                raise UserFileExists("debug : data/encryption_data")
+
+            with Path(_file).open("xt") as w_f :
+                _json = json.dumps({})
                 w_f.write(_json)
 
         
@@ -188,12 +200,19 @@ class User :
 
     @staticmethod
     def users_gen() -> NamedTuple :
-        user_data = dict()
+        from variables import user_data
+        #user_data = dict()
 
-
-        for user in cur.pathlibdirs :
+        with Dir_Reset.from_string("data/user_data") as cur :
+            users = (user for user in cur.pathlibdirs)
+                
+                
+        for user in users :
             user : Path
             name = user.stem
+
+            if name == "users" :
+                continue
 
             with Dir_Reset.from_string("data/password_data") as cur :               
 
@@ -261,72 +280,97 @@ class User :
 
 
 
+    def check_key(self, key = None, hash_type = 3) -> bool:
 
-    def acess(self, key) -> bool :
-        
-        while SELFLOOP :
-            mode = input(
-"""
-MODE:
-1.Acess password account
-2.Add password account
-3.Modify password account
-4.Delete password account
-5.List accounts
-6.Get encrypted copy of data
-7.Get decrypted copy of data
-8.Back
-9.Exit
-Choice:"""
-)
+        if not self.key_check :
+            key += self.salt
+            if hash_type == 3:
+                key = enc.hash3(key)
+            elif hash_type == 2:
+                key = enc.hash2(key)
 
-            while CHOICEFILTER :
-                try:
-                        mode = int(mode)               
-                except ValueError:
-                        mode = input("Input needs to be an integer\nNew choice:")
-                        continue
+            if key == self.key:
+                self.key = key
+                self.key_check = True
+                return True
+
+            else:
+                return False
+
+        else :
+            return True
 
 
-                if mode not in (1, 2, 3, 5, 6, 7, 8, 9) :
-                        mode = input("input needs to be an integer between 1 and 9\nNew choice:")
-                        continue
+    def acess(self) -> None:
 
-                break
+        if self.check_key() :    
+            while SELFLOOP :
+                mode = input(
+    """
+    MODE:
+    1.Acess password account
+    2.Add password account
+    3.Modify password account
+    4.Delete password account
+    5.List accounts
+    6.Get encrypted copy of data
+    7.Get decrypted copy of data
+    8.Back
+    9.Exit
+    Choice:"""
+    )
 
-
-
-
-            if mode == 1 :
-                self.get_pwd()
-
-            
-            elif mode == 2 :
-                self.add_pwd()
-
-
-            elif mode == 3 :
-                self.mod_pwd()
-
-
-            elif mode == 4 :
-                self.del_pwd()
-
-
-            elif mode == 5 :
-                self.list_pwds()
+                while CHOICEFILTER :
+                    try:
+                            mode = int(mode)               
+                    except ValueError:
+                            mode = input("Input needs to be an integer\nNew choice:")
+                            continue
 
 
-            elif mode == 6 :
-                self.dec_copy()
+                    if mode not in (1, 2, 3, 5, 6, 7, 8, 9) :
+                            mode = input("input needs to be an integer between 1 and 9\nNew choice:")
+                            continue
+
+                    break
 
 
-            elif mode == 7 :
-                self.enc_copy() 
 
-            
-            elif mode == 8 :
-                break
 
-            else :
-                _quit()
+                if mode == 1 :
+                    self.get_pwd()
+
+                
+                elif mode == 2 :
+                    self.add_pwd()
+
+
+                elif mode == 3 :
+                    self.mod_pwd()
+
+
+                elif mode == 4 :
+                    self.del_pwd()
+
+
+                elif mode == 5 :
+                    self.list_pwds()
+
+
+                elif mode == 6 :
+                    self.dec_copy()
+
+
+                elif mode == 7 :
+                    self.enc_copy() 
+
+                
+                elif mode == 8 :
+                    break
+
+                else :
+                    _quit()
+
+
+        else :
+            raise BadUserSetup("User was setted up incorrectly")

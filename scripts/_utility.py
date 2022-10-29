@@ -9,8 +9,10 @@ import time
 from typing import List, Dict
 
 
+
 #MYMODULES
-from variables import ReadOnly
+from variables import ReadOnly, user_data_init
+import variables
 
 
 
@@ -19,7 +21,13 @@ from variables import ReadOnly
 
 
 
-def _init() -> None:
+
+
+def _init() -> Dict:
+    from user import User
+
+    
+
     abspath = Path(os.path.abspath(__file__))
     os.chdir(abspath.parent.parent)
 
@@ -53,7 +61,8 @@ def _init() -> None:
                 if "users.json" not in _cur.dirs :
                     with open("users.json", "x") :
                         pass
-
+        
+    user_data_init()
 
 def _quit() -> None :
     sys.exit()
@@ -87,7 +96,13 @@ def handle_file(path : Path, opt : str = "fetch", mode : str = "norm") -> dict:
 
 async def minimal_time(func, delay) :
     ...
+
+
+class function :
+        ...
 class Arg_Save_Wrapper :
+    
+
     def __init__(self, func : function) :
         self.func = func
 
@@ -103,7 +118,7 @@ def argssave(func : function) :
 
 
 
-def timeit(func : function, debug : bool = True, verbose : bool = False, *args : List[function], **kwargs : Dict[function]
+def timeit(func : function, debug : bool = True, verbose : bool = False, *args : List[function], **kwargs : Dict[str, function]
             ) -> function | List[function] :
 
     error_count = 0
@@ -157,7 +172,7 @@ def loop_switch() -> None :
 
 
 class Dir_Reset :
-    root = Path(__file__).parent
+    root = Path(__file__).parent.parent
 
 
     def __init__(self, path : Path) -> None:
@@ -167,7 +182,7 @@ class Dir_Reset :
 
     @property
     def dirs(self) :
-        return os.listdir(self.path)
+        return os.listdir(os.getcwd())
 
     @dirs.setter
     def dirs(self, value) :
@@ -176,7 +191,7 @@ class Dir_Reset :
 
     @property
     def pathlibdirs(self) :
-        return get_dirs(self.path)
+        return get_dirs(os.getcwd())
 
     @pathlibdirs.setter
     def pathlibdirs(self, value) :
