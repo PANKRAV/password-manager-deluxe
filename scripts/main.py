@@ -2,7 +2,7 @@
 from _utility import loop_switch, Dir_Reset, get_dirs, _init, _quit
 import encryption as enc
 from user import User
-
+from variables import MAINLOOP, USERLOOP, CHOICEFILTER
 
 
 
@@ -21,13 +21,13 @@ import sys
 
 
 def main():
-    from variables import MAINLOOP, USERLOOP, CHOICEFILTER
-    import variables as v
+
+    from variables import user_data
 
 
     while MAINLOOP:
         os.system("cls||clear")
-        
+
         mode = input("mode:\n1.new user\n2.user\n3.exit\nChoice:")
 
         while CHOICEFILTER:
@@ -84,7 +84,7 @@ def main():
                     print("confirmation failed")
                     key = getpass("Give new password:")
 
-            v.user_data[name] = User.user_init(name, key)
+            user_data[name] = User.user_init(name, key)
 
 
 
@@ -95,6 +95,8 @@ def main():
 
                 if dirs == () :
                     print("they are no users yet\nmaybe create some")
+                    input("continue :")
+                    loop_switch()
                     break
 
 
@@ -103,7 +105,7 @@ def main():
                 os.system("cls||clear")
 
                 if in_name in (dir.stem for dir in dirs) :
-                    _user : user.User = v.user_data[in_name]
+                    _user : user.User = user_data[in_name]
 
                     in_key = getpass("Give key:")
 
@@ -148,7 +150,7 @@ def main():
 
                     print()
 
-                    for index, user in enumerate(v.user_data, start = 1) :
+                    for index, user in enumerate(user_data, start = 1) :
                         print(f"{index}.{str(user)}")
 
                         users.append(user)
@@ -173,7 +175,7 @@ def main():
 
                     del idx
                     in_name = users[choice - 1]
-                    _user : User = v.user_data[in_name]
+                    _user : User = user_data[in_name]
                     del users
 
                     in_key = getpass("Give key:")

@@ -34,6 +34,10 @@ class BadUserSetup(Exception):
     ...
 
 
+class BadEnvSetup(Exception):
+    ...
+
+
 
 
 #LOOPS
@@ -50,3 +54,25 @@ def user_data_init() :
     global user_data
     user_data = dict()
     user_data = User.users_gen()
+
+
+def global_security_init() :
+    global GLOBAL_SECURITY
+    from dotenv import load_dotenv
+    from os import getenv
+    from math import log2
+    load_dotenv()
+    GLOBAL_SECURITY = getenv("GLOBAL_SECURITY")
+
+    try :
+        GLOBAL_SECURITY = int(GLOBAL_SECURITY)
+    
+    except :
+        raise BadEnvSetup
+
+    level = log2(GLOBAL_SECURITY)
+    if level != int(level) :
+        raise BadEnvSetup
+
+
+

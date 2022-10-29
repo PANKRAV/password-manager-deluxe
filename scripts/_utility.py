@@ -11,7 +11,7 @@ from typing import List, Dict
 
 
 #MYMODULES
-from variables import ReadOnly, user_data_init
+from variables import ReadOnly, user_data_init, global_security_init
 import variables
 
 
@@ -63,6 +63,7 @@ def _init() -> Dict:
                         pass
         
     user_data_init()
+    global_security_init()
 
 def _quit() -> None :
     sys.exit()

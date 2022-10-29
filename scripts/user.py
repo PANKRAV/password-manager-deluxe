@@ -165,7 +165,7 @@ class User :
         key, salt = enc.salt(key)
         key = enc.hash3(key)
         _file = f"{name}.json"
-        print(os.getcwd())
+        
         with Dir_Reset.from_string("data/password_data") as cur :
             if _file in cur.dirs :
                 raise UserFileExists("debug : data/password_data")
