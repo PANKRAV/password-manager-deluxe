@@ -2,7 +2,9 @@ data/**
 test/**
 log/**
 logs/**
+.vscode
 .env
+*.code-workspace
 encryption_data/**
 bibliography.txt
 SETUP
