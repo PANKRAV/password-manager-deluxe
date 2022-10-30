@@ -7,13 +7,15 @@ import os
 import sys
 import time
 from typing import List, Dict
+import threading
+import functools
+import concurrent.futures
 
 
 
 #MYMODULES
 from variables import ReadOnly, user_data_init, global_security_init
 import variables
-
 
 
 
@@ -66,11 +68,57 @@ def _init() -> Dict:
     global_security_init()
 
 def _quit() -> None :
-    sys.exit()
+    sys.exit(0)
 
 
 
-def handle_file(path : Path, opt : str = "fetch", mode : str = "norm") -> dict:
+#To prevent hash timing attacks
+def scheduled_return(func, interval : float = .1) :
+    mylock = threading.Lock()
+    myevent = threading.Event()
+
+
+    def delay(interval) :
+
+        while True :
+            mylock.acquire()
+            time.sleep(interval)
+            mylock.release()
+            time.sleep(.0000001)
+            print("lock releasead")
+            if myevent.is_set() :
+                break
+        
+        return
+
+    def new_func(func) :
+        global val
+        start_time = time.time()
+        print("starting")
+        val = func()
+        mylock.acquire()
+        myevent.set()
+        print(f"Finished process in {time.time() - start_time}")
+        return val
+
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs) :
+        myevent.clear()
+        if mylock.locked() :
+            mylock.release()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            executor.map(delay, (interval, ))
+            executor.map(new_func, (func, ))
+
+        return val
+
+    return wrapper
+
+
+
+
+def handle_file(path : Path, opt : str = "fetch", mode : str = "norm") -> dict :
     if mode == "bytes" :
         mode = "b"
     else :
