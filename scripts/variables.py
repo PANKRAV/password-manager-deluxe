@@ -1,6 +1,11 @@
 from collections import namedtuple
+import logging
 
-
+#MODULE INITIALIZER
+def vars_init() :
+    user_data_init()
+    global_security_init()
+    global_logging_init()
 
 
 #SEQUENCES
@@ -75,4 +80,26 @@ def global_security_init() :
         raise BadEnvSetup
 
 
+def global_logging_init() :
+    global GLOBAL_LOGGING
+    from dotenv import load_dotenv
+    from os import getenv
+    load_dotenv()
+    GLOBAL_LOGGING = getenv("GLOBAL_LOGGING")
 
+   
+    if GLOBAL_LOGGING == "DEBUG" :
+        GLOBAL_LOGGING = logging.DEBUG
+    elif GLOBAL_LOGGING == "INFO" :
+        GLOBAL_LOGGING = logging.INFO
+    elif GLOBAL_LOGGING == "WARNING" :
+        GLOBAL_LOGGING = logging.WARNING
+    elif GLOBAL_LOGGING == "ERROR" :
+        GLOBAL_LOGGING = logging.ERROR
+    elif GLOBAL_LOGGING == "CRITICAL" :
+        GLOBAL_LOGGING = logging.CRITICAL
+    else :
+        raise BadEnvSetup
+
+
+#CONSTANSTS
