@@ -1,19 +1,24 @@
 #PYTHONMODULES
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from numpy import character, random as nprand
 import numpy as np
 import hashlib
 from rsa import PrivateKey, PublicKey
 import cryptography
 from simplecrypt import encrypt, decrypt
+import rsa
 from cryptography.fernet import Fernet
 import pathlib
+import json
 
 
 #MYMODULES
-from variables import CHARS, LOWER, UPPER, NUMBERS, SYMBOLS
+from variables import CHARS, LOWER, UPPER, NUMBERS, SYMBOLS, RAN_CHAR_SEQ, BadUserSetup
+from _utility import scheduled_return
 
 
-
+@scheduled_return
 def random_password(length = 10):
     pr = []
 
@@ -50,7 +55,7 @@ def random_password(length = 10):
 
 
 
-
+@scheduled_return
 def random_password_new(length = 10):
     pr = []
     last = None
@@ -126,10 +131,12 @@ def random_password_new(length = 10):
     return "".join(password)
 
 #hash processes
+@scheduled_return
 def hash2(ctx) -> str:
     byte_data = ctx.encode()
     return hashlib.sha512(byte_data).hexdigest()
 
+@scheduled_return
 def hash3(ctx) -> str:
     byte_data = ctx.encode()
     return hashlib.sha3_512(byte_data).hexdigest()
@@ -139,12 +146,102 @@ def salt(ctx : str) -> str:
     return ctx + salt, salt
 
 
+@scheduled_return(interval=.1)
+def simple_crypt(passkey, ctx, mode : str = "enc") -> str:
+    
+    if mode == "enc":
+        return encrypt(passkey, ctx)
+
+    elif mode == "dec":
+        return decrypt(passkey, ctx)
+
+    else:
+        return None
 
 
 
 
+def ceasar(ctx, indent : int = 0) -> str:
+    ctx = list(ctx)
+
+    for idx, char in enumerate(ctx):
+
+        char:str
+        if not char.isspace():
+            #ran_char_seq =  was assigned at line 22
+            _index = RAN_CHAR_SEQ.index(char)
+            try:
+                new_char = RAN_CHAR_SEQ[_index + indent]
+            
+            except IndexError:
+                if _index + indent > 72:
+                    new_char = RAN_CHAR_SEQ[indent]
+                
+                elif _index + indent < 0:
+                    new_char = RAN_CHAR_SEQ[72 - indent]
+            ctx[idx] = new_char
+
+    return "".join(ctx)
+
+
+def reverse_ceasar(ctx, indent : int = 0) -> str:
+
+    return ceasar(ctx , -indent)
+
+
+class Encryption :
+    
+
+    @staticmethod
+    class SinglePwd :
+        if TYPE_CHECKING :
+            from user import User
+    
+
+        def __init__(self, user : User, ctx : str) -> None:
+            self.user = user
+            self.key = self.user.key
+            if not self.user.key_check :
+                raise BadUserSetup("User object doesn't have an encryption key")
+
+            else :
+                self.enc_content = ctx.encode("latin-1")
+
+                self.enc_json = json.loads(self.user.enc_json)
+                self.publicKey = self.enc_json["publicKey"]
+                self.publicKey = self.publicKey.encode("latin-1")
+                self.publicKey = simple_crypt(self.key, self.publicKey, "dec")
+                self.publicKey = PublicKey.load_pkcs1(self.publicKey)
+                self.publicKey : PublicKey
+
+
+                self.privateKey = self.enc_json["privateKey"]
+                self.privateKey = self.privateKey.encode("latin-1")
+                self.privateKey = simple_crypt(self.key, self.privateKey, "dec")
+                self.privateKey = PrivateKey.load_pkcs1(self.privateKey)
+                self.privateKey : PrivateKey
+
+                self.dec_content = rsa.decrypt(self.enc_content, self.privateKey).decode()
+
+        
 
 
 
-class Password:
-    ...
+
+        @classmethod
+        def new_pwd(cls, user : User, ctx : str) :
+            ...
+
+
+
+    
+
+    class UserEnc :
+        if TYPE_CHECKING :
+            from user import User
+
+        
+        def __init__(self, user : User) -> None:
+            pass
+    
+

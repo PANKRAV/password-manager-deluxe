@@ -79,7 +79,7 @@ class User :
 
 
     @property
-    def _json(self) :
+    def _json(self) -> str :
         with Dir_Reset(Path("data/user_data")) :
             with self.file.open("r") as f_r :
                 self._json_ = f_r.read()
@@ -88,7 +88,7 @@ class User :
 
 
     @_json.setter
-    def _json(self, value) :
+    def _json(self, value) -> None :
         with Dir_Reset(Path("data/user_data")) :
             with self.file.open("w") as f_w :
                 f_w.write(json.dumps(value, indent = 4))
@@ -97,7 +97,7 @@ class User :
 
 
     @property
-    def enc_json(self) :
+    def enc_json(self) -> str:
         with Dir_Reset(Path("data/encryption_data")) :
             with self.file.open("r") as f_r :
                 self._enc_json = f_r.read()
@@ -106,7 +106,7 @@ class User :
 
 
     @enc_json.setter
-    def enc_json(self, value) :
+    def enc_json(self, value) -> None :
         with Dir_Reset(Path("data/encryption_data")) :
             with self.file.open("w") as f_w :
                 f_w.write(json.dumps(value, indent = 4))
@@ -114,7 +114,7 @@ class User :
 
 
     @property
-    def user_json(self) :
+    def user_json(self) -> str :
         with Dir_Reset(Path("data/user_data")) :
             with self.file.open("r") as f_r :
                 self._user_json = f_r.read()
@@ -123,7 +123,7 @@ class User :
 
 
     @user_json.setter
-    def user_json(self, value) :
+    def user_json(self, value) -> None :
         with Dir_Reset(Path("data/user_data")) :
             with self.file.open("w") as f_w :
                 f_w.write(json.dumps(value, indent = 4))

@@ -81,7 +81,7 @@ def _quit() -> None :
 
 
 #To prevent hash timing attacks
-def scheduled_return(_func = None,* ,interval : float = .5) :
+def scheduled_return(_func = None,* ,interval : float = .2) :
     def inner(func) :
 
        
