@@ -10,17 +10,24 @@ from typing import List, Dict
 import threading
 import functools
 import concurrent.futures
+import logging
+from msvcrt import getch, getche
+
 
 
 
 #MYMODULES
-from variables import ReadOnly, user_data_init, global_security_init
+from variables import ReadOnly, user_data_init, global_security_init, global_logging_init
 import variables
 
 
 
 
 
+
+format = "%(asctime)s: %(message)s"
+logging.basicConfig(format=format, level=logging.DEBUG,
+                        datefmt="%H:%M:%S")
 
 
 
@@ -66,6 +73,7 @@ def _init() -> Dict:
         
     user_data_init()
     global_security_init()
+    global_logging_init()
 
 def _quit() -> None :
     sys.exit(0)
@@ -73,47 +81,73 @@ def _quit() -> None :
 
 
 #To prevent hash timing attacks
-def scheduled_return(func, interval : float = .1) :
-    mylock = threading.Lock()
-    myevent = threading.Event()
+def scheduled_return(_func = None,* ,interval : float = .5) :
+    def inner(func) :
+
+       
+        mybarrier = threading.Barrier(2)
+        myevent = threading.Event()
+
+        def delay(interval) :
+            while True :
+                logging.debug("started sleeping")
+                time.sleep(interval)
+                logging.debug("checking for event")
+                if myevent.is_set() :
+                    try :
+                        mybarrier.wait(timeout=100)
+                        break
+
+                    except TimeoutError :
+                        logging.warning("delay timed out")
+                        return False
+
+                    except Exception as ex:
+                        raise ex(f"An exception occurred{ex}")
+
+            return
 
 
-    def delay(interval) :
-
-        while True :
-            mylock.acquire()
-            time.sleep(interval)
-            mylock.release()
-            time.sleep(.0000001)
-            print("lock releasead")
-            if myevent.is_set() :
-                break
+        class FuncData :
+            def __init__(self, datafunc, _args, _kwargs) :
+                self.datafunc : function = datafunc
+                self.args : List = _args
+                self.kwargs : Dict = _kwargs
         
-        return
+        def new_func(data : FuncData) :
+            global val
+            func = data.datafunc
+            args = data.args
+            kwargs = data.kwargs
+            start_time = time.time()
+            logging.debug("starting")
+            val = func(*args, **kwargs)
+            myevent.set()
+            mybarrier.wait()
+            logging.debug(f"Finished process in {time.time() - start_time}")
+            return val
+            
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs) :
+            global mybarrier
+            data = FuncData(func, args, kwargs)
+            myevent.clear()
+            mybarrier = threading.Barrier(2)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                executor.map(new_func, (data, ))
+                executor.map(delay, (interval, ))
 
-    def new_func(func) :
-        global val
-        start_time = time.time()
-        print("starting")
-        val = func()
-        mylock.acquire()
-        myevent.set()
-        print(f"Finished process in {time.time() - start_time}")
-        return val
+            
+            logging.debug("exited successfully")
+            return val
 
+        
+        return wrapper
 
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs) :
-        myevent.clear()
-        if mylock.locked() :
-            mylock.release()
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            executor.map(delay, (interval, ))
-            executor.map(new_func, (func, ))
-
-        return val
-
-    return wrapper
+    if _func is None :  
+        return inner
+    else :
+        return inner(_func)
 
 
 
@@ -270,3 +304,15 @@ def get_dirs(path = os.getcwd()) -> Tuple :
     dirs = tuple(Path(dir) for dir in dirs)
 
     return dirs
+
+
+
+
+
+class AsterisksOut :
+
+    def __enter__(self) :
+        ...
+
+    def __exit__(self, exc_type, exc_val, exc_tb) :
+        ...
