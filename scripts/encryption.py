@@ -14,7 +14,7 @@ import json
 
 
 #MYMODULES
-from variables import CHARS, LOWER, UPPER, NUMBERS, SYMBOLS, RAN_CHAR_SEQ, BadUserSetup
+from variables import CHARS, LOWER, UPPER, NUMBERS, SYMBOLS, RAN_CHAR_SEQ, BadUserSetup, GLOBAL_SECURITY
 from _utility import scheduled_return
 
 
@@ -242,6 +242,72 @@ class Encryption :
 
         
         def __init__(self, user : User) -> None:
-            pass
+            publicKey, privateKey = rsa.newkeys(GLOBAL_SECURITY)
+            
+            self.user = user
+            self.key = self.user.key
+            self.enc_json = json.loads(self.user.enc_json)
+
+
+            publicKey = self.enc_json["publicKey"]
+            publicKey = publicKey.encode("latin-1")
+            publicKey = simple_crypt(self.key, publicKey, "dec")
+            publicKey = PublicKey.load_pkcs1(publicKey)
+
+            self.privateKey = self.enc_json["privateKey"]
+            self.privateKey = self.privateKey.encode("latin-1")
+            self.privateKey = simple_crypt(self.key, self.privateKey, "dec")
+            self.privateKey = PrivateKey.load_pkcs1(self.privateKey)
+            self.privateKey : PrivateKey
+
+
+
+
+
+            del publicKey, privateKey
+
+
+
+
+        def print_data(self) -> str:
+            
+
+
+            _json = json.loads(self.user.pwd_json)
+
+
+            dec_json = _json.copy()
+
+            for key, item in dec_json.items() :
+                
+                new_pwd = rsa.decrypt(dec_json[key]["pwd"].encode("latin-1"), self.privateKey)
+
+                dec_json[key]["pwd"] = new_pwd.decode("latin-1")
+
+            return json.dumps(dec_json)
+
+
+
+        def reset(self) :
+            ...
+
+
+        
+        @staticmethod
+        def user_init(key : str) :
+            publicKey, privateKey = rsa.newkeys(GLOBAL_SECURITY)
+
+
+            publicKey = simple_crypt(key, publicKey.save_pkcs1())
+            publicKey = publicKey.decode("latin-1")
+
+
+            privateKey = simple_crypt(key, privateKey.save_pkcs1())
+            privateKey = privateKey.decode("latin-1")
+
+            return publicKey, privateKey, GLOBAL_SECURITY
+
     
 
+class Password :
+    ...

@@ -1,7 +1,5 @@
 #MYMODULES
-from _utility import loop_switch, Dir_Reset, get_dirs, _init, _quit
-import encryption as enc
-from user import User
+from _utility import _init
 from variables import MAINLOOP, USERLOOP, CHOICEFILTER
 
 
@@ -11,6 +9,7 @@ import atexit
 from collections import namedtuple
 import os
 from getpass import getpass
+from pwinput import pwinput
 import sys
 
 
@@ -23,7 +22,9 @@ import sys
 def main():
 
     from variables import user_data
-
+    import encryption as enc
+    from user import User
+    from _utility import loop_switch, Dir_Reset, get_dirs, _quit
 
     while MAINLOOP:
         os.system("cls||clear")
@@ -72,11 +73,11 @@ def main():
                     break
 
 
-            key = getpass()
+            key = pwinput(prompt = "Password:")
 
             while CHOICEFILTER:
 
-                if key == getpass("Confirm password:"):
+                if key == pwinput(prompt = "Confirm password:"):
                     loop_switch()
                     break
 
@@ -107,7 +108,7 @@ def main():
                 if in_name in (dir.stem for dir in dirs) :
                     _user : user.User = user_data[in_name]
 
-                    in_key = getpass("Give key:")
+                    in_key = pwinput(prompt = "Password:")
 
                     while CHOICEFILTER : #not exactly a CHOICEFILTER
                         if _user.check_key(in_key) :
@@ -136,7 +137,7 @@ def main():
                                 break
 
                             if opt == 1 :
-                                in_key = getpass("Give new key:")
+                                in_key = pwinput(prompt = "New password:")
 
                             else :
                                 loop_switch()
@@ -178,11 +179,12 @@ def main():
                     _user : User = user_data[in_name]
                     del users
 
-                    in_key = getpass("Give key:")
+                    in_key = pwinput(prompt = "Password:")
 
 
                     while CHOICEFILTER : #not exactly a CHOICEFILTER
                         if _user.check_key(in_key) :
+                            _user.acess()
                             break
 
                         else :

@@ -25,20 +25,28 @@ import variables
 
 
 
-format = "%(asctime)s: %(message)s"
-logging.basicConfig(format=format, level=logging.DEBUG,
-                        datefmt="%H:%M:%S")
+
 
 
 
 
 def _init() -> Dict:
-    from user import User
+    global format
 
     
 
     abspath = Path(os.path.abspath(__file__))
     os.chdir(abspath.parent.parent)
+
+    global_security_init()
+    user_data_init()
+    global_logging_init()
+
+    from variables import GLOBAL_LOGGING
+    format = "%(asctime)s: %(message)s"
+    logging.basicConfig(format=format, level=GLOBAL_LOGGING,
+                        datefmt="%H:%M:%S")
+
 
     dirs = os.listdir()
     if "setup" not in dirs :
@@ -71,9 +79,6 @@ def _init() -> Dict:
                     with open("users.json", "x") :
                         pass
         
-    user_data_init()
-    global_security_init()
-    global_logging_init()
 
 def _quit() -> None :
     sys.exit(0)
@@ -120,11 +125,11 @@ def scheduled_return(_func = None,* ,interval : float = .2) :
             args = data.args
             kwargs = data.kwargs
             start_time = time.time()
-            logging.debug("starting")
+            logging.info(f"starting process : {func.__name__}(args={args}, kwargs={kwargs})")
             val = func(*args, **kwargs)
             myevent.set()
             mybarrier.wait()
-            logging.debug(f"Finished process in {time.time() - start_time}")
+            logging.info(f"Finished process : {func.__name__}(args={args}, kwargs={kwargs}) in {time.time() - start_time}")
             return val
             
         @functools.wraps(func)

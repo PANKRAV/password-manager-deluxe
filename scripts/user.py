@@ -1,18 +1,18 @@
 #MYMODULES
 from _utility import Dir_Reset, _quit, handle_file
 from variables import MAINLOOP, USERLOOP, CHOICEFILTER, SELFLOOP, BadValue, ReadOnly, UserFileExists, BadUserSetup
-import encryption as enc
+from encryption import Encryption, Password, salt, hash3, hash2
 import json
 
 
 #PYTHONMODULES
 from pathlib import Path
 from collections import namedtuple
-from typing import List, NamedTuple
+from typing import List, NamedTuple, Dict
 import os
 
 
-Passwords = List[enc.Password]
+Passwords = List[Password]
 
 class User :
     user_count = 0
@@ -79,17 +79,17 @@ class User :
 
 
     @property
-    def _json(self) -> str :
-        with Dir_Reset(Path("data/user_data")) :
+    def pwd_json(self) -> str :
+        with Dir_Reset(Path("data/password_data")) :
             with self.file.open("r") as f_r :
                 self._json_ = f_r.read()
             
             return self._json_
 
 
-    @_json.setter
-    def _json(self, value) -> None :
-        with Dir_Reset(Path("data/user_data")) :
+    @pwd_json.setter
+    def pwd_json(self, value) -> None :
+        with Dir_Reset(Path("data/password_data")) :
             with self.file.open("w") as f_w :
                 f_w.write(json.dumps(value, indent = 4))
 
@@ -106,7 +106,7 @@ class User :
 
 
     @enc_json.setter
-    def enc_json(self, value) -> None :
+    def enc_json(self, value : Dict) -> None :
         with Dir_Reset(Path("data/encryption_data")) :
             with self.file.open("w") as f_w :
                 f_w.write(json.dumps(value, indent = 4))
@@ -127,6 +127,7 @@ class User :
         with Dir_Reset(Path("data/user_data")) :
             with self.file.open("w") as f_w :
                 f_w.write(json.dumps(value, indent = 4))
+
 
 
 
@@ -162,8 +163,8 @@ class User :
         
         assert key != None
         
-        key, salt = enc.salt(key)
-        key = enc.hash3(key)
+        key, _salt = salt(key)
+        key = hash3(key)
         _file = f"{name}.json"
         
         with Dir_Reset.from_string("data/password_data") as cur :
@@ -180,20 +181,24 @@ class User :
                 raise UserFileExists("debug : data/user_data")
 
             with Path(_file).open("xt") as w_f :
-                dct = {"name" : name, "key" : key, "salt" : salt}
+                dct = {"name" : name, "key" : key, "salt" : _salt}
                 _json = json.dumps(dct)
                 w_f.write(_json)
 
+
+
+        publicKey, privateKey, security = Encryption.UserEnc.user_init(key)
 
         with Dir_Reset.from_string("data/encryption_data") as cur :
             if _file in cur.dirs :
                 raise UserFileExists("debug : data/encryption_data")
 
             with Path(_file).open("xt") as w_f :
-                _json = json.dumps({})
+                _json = {"publicKey" : publicKey, "privateKey" : privateKey, "security" : security}
+                _json = json.dumps(_json)
                 w_f.write(_json)
 
-        
+
         return cls.from_file(_file)
 
 
@@ -285,13 +290,14 @@ class User :
         if not self.key_check :
             key += self.salt
             if hash_type == 3:
-                key = enc.hash3(key)
+                key = hash3(key)
             elif hash_type == 2:
-                key = enc.hash2(key)
+                key = hash2(key)
 
             if key == self.key:
                 self.key = key
                 self.key_check = True
+                self.ecnryption = Encryption.UserEnc(self)
                 return True
 
             else:
@@ -303,7 +309,7 @@ class User :
 
     def acess(self) -> None:
 
-        if self.check_key() :    
+        if self.check_key() and self.ecnryption != None :    
             while SELFLOOP :
                 mode = input(
     """
