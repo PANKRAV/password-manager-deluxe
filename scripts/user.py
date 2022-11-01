@@ -309,7 +309,7 @@ class User :
 
     def acess(self) -> None:
 
-        if self.check_key() and self.ecnryption != None :    
+        if self.key_check and self.ecnryption != None :    
             while SELFLOOP :
                 mode = input(
     """
@@ -372,6 +372,8 @@ class User :
 
                 
                 elif mode == 8 :
+                    self.key_check = False
+                    self.key = json.loads(self.user_json)["key"]
                     break
 
                 else :

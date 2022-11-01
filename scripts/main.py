@@ -207,7 +207,7 @@ def main():
                                 break
 
                             if opt == 1 :
-                                in_key = getpass("Give new key:")
+                                in_key = pwinput(prompt = "New password:")
 
                             else :
                                 break

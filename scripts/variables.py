@@ -1,5 +1,6 @@
 from collections import namedtuple
 import logging
+from threading import Lock
 
 #MODULE INITIALIZER
 def vars_init() :
@@ -45,12 +46,12 @@ class BadEnvSetup(Exception):
 
 
 
-#LOOPS
+#LOOPS_UTILITY
 CHOICEFILTER = True
 SELFLOOP = True
 MAINLOOP = True
 USERLOOP = True
-
+Global_Lock = Lock()
 
 
 #DATA
@@ -103,3 +104,4 @@ def global_logging_init() :
 
 
 #CONSTANSTS
+
