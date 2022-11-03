@@ -86,7 +86,7 @@ def _quit() -> None :
 
 
 #To prevent hash timing attacks
-def scheduled_return(_func = None,* ,interval : float = .2) :
+def scheduled_return(_func = None,* ,interval : float = .2, _timeout : float|int = 100) :
     def inner(func) :
 
        
@@ -94,21 +94,21 @@ def scheduled_return(_func = None,* ,interval : float = .2) :
         myevent = threading.Event()
 
         def delay(interval) :
-            while True :
+            while not myevent.is_set() :
                 logging.debug("started sleeping")
                 time.sleep(interval)
                 logging.debug("checking for event")
-                if myevent.is_set() :
-                    try :
-                        mybarrier.wait(timeout=100)
-                        break
+                
+            try :
+                mybarrier.wait(timeout=100)
+                
 
-                    except TimeoutError :
-                        logging.warning("delay timed out")
-                        return False
+            except concurrent.futures.TimeoutError :
+                logging.warning("delay timed out")
+                return False
 
-                    except Exception as ex:
-                        raise ex(f"An exception occurred{ex}")
+            except Exception as ex:
+                raise ex(f"An exception occurred: {ex}")
 
             return
 
@@ -121,12 +121,18 @@ def scheduled_return(_func = None,* ,interval : float = .2) :
         
         def new_func(data : FuncData) :
             global val
+            val = None
             func = data.datafunc
             args = data.args
             kwargs = data.kwargs
             start_time = time.time()
             logging.info(f"starting process : {func.__name__}(args={args}, kwargs={kwargs})")
-            val = func(*args, **kwargs)
+            try :
+                val = func(*args, **kwargs)
+            except Exception as ex :
+                logging.warning(f"Ignoring Exception: {ex} occured in the decorated function : {func.__name__}(args={args}, kwargs={kwargs}), (returning None)")   
+                myevent.set()
+                return     
             myevent.set()
             mybarrier.wait()
             logging.info(f"Finished process : {func.__name__}(args={args}, kwargs={kwargs}) in {time.time() - start_time}")
@@ -140,8 +146,11 @@ def scheduled_return(_func = None,* ,interval : float = .2) :
             mybarrier = threading.Barrier(2)
             with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                 executor.map(new_func, (data, ))
-                executor.map(delay, (interval, ))
-
+                try :
+                    executor.map(delay, (interval, ), timeout=_timeout)
+                except concurrent.futures.TimeoutError :
+                    mybarrier.wait()
+                    logging.warning("Delay timed out")
             
             logging.debug("exited successfully")
             return val
@@ -213,20 +222,20 @@ def timeit(func : function, debug : bool = True, verbose : bool = False, *args :
     errors = dict()
     start_time = time.time()
     try :
-        val = func()
+        _val = func()
 
     except Exception as ex :        
         error_count += 1
         print(f"{ex} occurred in 1st process")
-        errors[f"{error_count}.{val.__name__}()"] = ex
+        errors[f"{error_count}.{_val.__name__}()"] = ex
 
     if args != None or kwargs != None :
-        val = list(val)
+        _val = list(_val)
 
         for idx, _func in enumerate(args, start = 2) :
             _func : function
             try :
-                val.append(_func())
+                _val.append(_func())
             except Exception as ex:
                 print(f"{ex} occured in No.{idx} process ({_func.__name__}())")
                 errors[f"{error_count}.{_func.__name__}()"] = ex
