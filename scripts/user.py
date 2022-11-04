@@ -1,7 +1,7 @@
 #MYMODULES
-from _utility import Dir_Reset, _quit, handle_file
+from _utility import Dir_Reset, _quit, handle_file, loop_switch
 from variables import MAINLOOP, USERLOOP, CHOICEFILTER, SELFLOOP, BadValue, ReadOnly, UserFileExists, BadUserSetup
-from encryption import Encryption, Password, salt, hash3, hash2
+from encryption import Encryption, Password, salt, hash3, hash2, random_password_new
 import json
 
 
@@ -10,6 +10,8 @@ from pathlib import Path
 from collections import namedtuple
 from typing import List, NamedTuple, Dict
 import os
+from pwinput import pwinput
+import time
 
 
 Passwords = List[Password]
@@ -88,7 +90,7 @@ class User :
 
 
     @pwd_json.setter
-    def pwd_json(self, value) -> None :
+    def pwd_json(self, value : Dict) -> None :
         with Dir_Reset(Path("data/password_data")) :
             with self.file.open("w") as f_w :
                 f_w.write(json.dumps(value, indent = 4))
@@ -123,7 +125,7 @@ class User :
 
 
     @user_json.setter
-    def user_json(self, value) -> None :
+    def user_json(self, value : Dict) -> None :
         with Dir_Reset(Path("data/user_data")) :
             with self.file.open("w") as f_w :
                 f_w.write(json.dumps(value, indent = 4))
@@ -162,7 +164,7 @@ class User :
     def user_init(cls, name, key = None):
         
         assert key != None
-        
+        original = str(key)#str so it is not just a reference
         key, _salt = salt(key)
         key = hash3(key)
         _file = f"{name}.json"
@@ -187,7 +189,7 @@ class User :
 
 
 
-        publicKey, privateKey, security = Encryption.UserEnc.user_init(key)
+        publicKey, privateKey, security = Encryption.UserEnc.user_init(original)
 
         with Dir_Reset.from_string("data/encryption_data") as cur :
             if _file in cur.dirs :
@@ -254,22 +256,146 @@ class User :
 
 
     def get_pwd(self) -> None :
-        ...
+        _json = self.pwd_json
+        _json : Dict = json.loads(_json)
+        acc_name = input("Account name :")
+        while acc_name not in _json.keys() :
+            acc_name = input("Account does not exist\nGive a new name :")
+
+        _json = _json[acc_name]
+        username = _json["username"]
+        email = _json["email"]
+        enc_pwd = _json["pwd"]
+        dec_pwd = self.ecnryption.decrypt(enc_pwd)
+        print(f"""
+Account : {acc_name}
+Username : {username}
+E-Mail : {email}
+Password : {dec_pwd}""")
+
+        input("Continue :")
+        loop_switch()
+        return
+
 
     def add_pwd(self) -> None :
-        ...
+        _json = self.pwd_json
+        _json : Dict = json.loads(_json)
+        acc_name = input("Account name :")
+        while acc_name in _json.keys() :
+            acc_name = input("Account name is taken\nGive a new name :")
+
+        username = input("Username :")
+        while CHOICEFILTER :             
+            email = input("E-Mail :")
+
+            if email != email.rstrip():
+                print("Email can't have a whitespace")
+                continue
+            break
+
+
+        while True :
+            mode = input("1.Choose a Password\n2.Random password\nChoice :")
+
+            while CHOICEFILTER :
+                try:
+                    mode = int(mode)               
+                except ValueError:
+                    mode = input("Input needs to be an integer\nNew choice:")
+                    continue
+
+
+                if mode not in (1, 2) :
+                    mode = input("input needs to be an integer between 1 and 2\nNew choice:")
+                    continue
+
+                break
+
+            if mode == 1 :
+                pwd = pwinput(prompt = "Password :")
+                pwinput(prompt = "Confirm Password") 
+                    
+            
+            else :#2
+                while True:
+                    try:
+                        length = int(input("Password length :"))
+                        break  
+
+                    except ValueError:
+                        length = input("choice needs to be an integer\nnew choice:")
+
+                pwd = random_password_new(length)
+                print(f"Your password is {pwd}")
+                choice = input("For a different password input \"yes\" :")
+                if not choice.upper() == "YES":
+                    break
+
+
+        enc_pwd = self.ecnryption.encrypt(pwd)
+        _json[acc_name] = {"username" : username, "pwd" : enc_pwd, "email": email}
+        self.pwd_json = _json
+        print("Account configured")
+        print(f"""
+Account : {acc_name}
+Username : {username}
+E-Mail : {email}
+Password : {pwd}""")
+        input("Continue :")
+        loop_switch()
+        return
+
+                
 
     def mod_pwd(self) -> None :
         ...
 
     def del_pwd(self) -> None :
-        ...
+        _json = self.pwd_json
+        _json : Dict = json.loads(_json)
+        acc_name = input("Account name :")
+        while acc_name not in _json.keys() :
+            acc_name = input("Account does not exist\nGive a new name :")
+        
+        choice = input("Are you sure :\n1.Yes\n2.No\nChoise :")
+        while True :
+            try :
+                choice = int(choice)
+            except :
+                choice = input("Your choice needs to be an integer")
+                continue
+
+            if choice not in (1, 2) :
+                choice = input("Your choice needs to be an integer between 1 and 2")
+                continue
+
+            break
+
+        if choice == 1 :
+            _json.__delitem__(acc_name)
+            self.pwd_json = _json
+            input("Continue :")
+            loop_switch()
+            return
+        
+        else :
+            return
 
     def list_pwds(self) -> str :
-        ...
+        _json = self.pwd_json
+        _json : Dict = json.loads(_json)
+        for idx , key in enumerate(_json.keys(), start=1) :
+            print(f"{idx}.{key}")
+        input("Continue :")
 
     def enc_copy(self) -> str :
-        ...
+        _json = self.pwd_json
+        _json = json.loads(_json)
+        print(_json)
+        input("Continue :")
+        loop_switch()
+        return
 
     def dec_copy(self) -> str :
         ...
@@ -285,8 +411,9 @@ class User :
 
 
 
-    def check_key(self, key = None, hash_type = 3) -> bool:
-
+    def check_key(self, key : str = None, hash_type = 3) -> bool:
+        #str(key) to avoid original being just a reference to the key variable
+        original = str(key) 
         if not self.key_check :
             key += self.salt
             if hash_type == 3:
@@ -295,9 +422,11 @@ class User :
                 key = hash2(key)
 
             if key == self.key:
-                self.key = key
+                self.key = original
+                del original
                 self.key_check = True
                 self.ecnryption = Encryption.UserEnc(self)
+                time.sleep(.1)
                 return True
 
             else:
@@ -309,7 +438,7 @@ class User :
 
     def acess(self) -> None:
 
-        if self.key_check and self.ecnryption != None :    
+        if self.key_check and self.ecnryption is not None :    
             while SELFLOOP :
                 mode = input(
     """
@@ -319,8 +448,8 @@ class User :
     3.Modify password account
     4.Delete password account
     5.List accounts
-    6.Get encrypted copy of data
-    7.Get decrypted copy of data
+    6.Get decrypted copy of data
+    7.Get encrypted copy of data
     8.Back
     9.Exit
     Choice:"""
@@ -334,7 +463,7 @@ class User :
                             continue
 
 
-                    if mode not in (1, 2, 3, 5, 6, 7, 8, 9) :
+                    if mode not in (1, 2, 3, 4, 5, 6, 7, 8, 9) :
                             mode = input("input needs to be an integer between 1 and 9\nNew choice:")
                             continue
 

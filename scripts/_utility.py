@@ -17,7 +17,7 @@ from msvcrt import getch, getche
 
 
 #MYMODULES
-from variables import ReadOnly, user_data_init, global_security_init, global_logging_init
+from variables import ReadOnly, user_data_init, global_security_init, global_logging_init, users_to_reset_init
 import variables
 
 
@@ -41,6 +41,7 @@ def _init() -> Dict:
     global_security_init()
     user_data_init()
     global_logging_init()
+    users_to_reset_init()
 
     from variables import GLOBAL_LOGGING
     format = "%(asctime)s: %(message)s"

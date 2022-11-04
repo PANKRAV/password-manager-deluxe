@@ -6,7 +6,7 @@ import numpy as np
 import hashlib
 from rsa import PrivateKey, PublicKey
 import cryptography
-from simplecrypt import encrypt, decrypt
+import simplecrypt
 import rsa
 from cryptography.fernet import Fernet
 import pathlib
@@ -131,12 +131,12 @@ def random_password_new(length = 10):
     return "".join(password)
 
 #hash processes
-@scheduled_return
+@scheduled_return(interval=.4)
 def hash2(ctx) -> str:
     byte_data = ctx.encode()
     return hashlib.sha512(byte_data).hexdigest()
 
-@scheduled_return
+@scheduled_return(interval=.4)
 def hash3(ctx) -> str:
     byte_data = ctx.encode()
     return hashlib.sha3_512(byte_data).hexdigest()
@@ -146,14 +146,14 @@ def salt(ctx : str) -> str:
     return ctx + salt, salt
 
 
-@scheduled_return(interval=.1)
+@scheduled_return(interval=1)
 def simple_crypt(passkey, ctx, mode : str = "enc") -> str:
     
     if mode == "enc":
-        return encrypt(passkey, ctx)
+        return simplecrypt.encrypt(passkey, ctx)
 
     elif mode == "dec":
-        return decrypt(passkey, ctx)
+        return simplecrypt.decrypt(passkey, ctx)
 
     else:
         return None
@@ -249,10 +249,10 @@ class Encryption :
             self.enc_json = json.loads(self.user.enc_json)
 
 
-            publicKey = self.enc_json["publicKey"]
-            publicKey = publicKey.encode("latin-1")
-            publicKey = simple_crypt(self.key, publicKey, "dec")
-            publicKey = PublicKey.load_pkcs1(publicKey)
+            self.publicKey = self.enc_json["publicKey"]
+            self.publicKey = self.publicKey.encode("latin-1")
+            self.publicKey = simple_crypt(self.key, self.publicKey, "dec")
+            self.publicKey = PublicKey.load_pkcs1(self.publicKey)
 
             self.privateKey = self.enc_json["privateKey"]
             self.privateKey = self.privateKey.encode("latin-1")
@@ -308,6 +308,12 @@ class Encryption :
             return publicKey, privateKey, GLOBAL_SECURITY
 
     
+        def encrypt(self, pwd : str) :
+            return rsa.encrypt(pwd.encode("latin-1"),
+                    self.publicKey).decode("latin-1")
 
+
+        def decrypt(self, pwd : str) :
+            return rsa.decrypt(pwd.encode("latin-1"), self.privateKey).decode("latin-1")
 class Password :
     ...

@@ -7,6 +7,7 @@ def vars_init() :
     user_data_init()
     global_security_init()
     global_logging_init()
+    users_to_reset_init()
 
 
 #SEQUENCES
@@ -46,7 +47,7 @@ class BadEnvSetup(Exception):
 
 
 
-#LOOPS_UTILITY
+#LOOPS/UTILITY
 CHOICEFILTER = True
 SELFLOOP = True
 MAINLOOP = True
@@ -101,6 +102,10 @@ def global_logging_init() :
         GLOBAL_LOGGING = logging.CRITICAL
     else :
         raise BadEnvSetup
+
+def users_to_reset_init() :
+    global users_to_reset
+    users_to_reset = []
 
 
 #CONSTANSTS

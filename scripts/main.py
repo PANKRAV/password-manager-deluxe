@@ -82,8 +82,8 @@ def main():
                     break
 
                 else:
-                    print("confirmation failed")
-                    key = getpass("Give new password:")
+                    print("Confirmation failed")
+                    key = pwinput(prompt = "New password:")
 
             user_data[name] = User.user_init(name, key)
 
@@ -94,7 +94,7 @@ def main():
 
             while USERLOOP :
 
-                if dirs == () :
+                if len(dirs) == 1 :
                     print("they are no users yet\nmaybe create some")
                     input("continue :")
                     loop_switch()
@@ -217,7 +217,7 @@ def main():
                     break
 
                 else :
-                    print("Account does not exists")
+                    print("Account does not exist")
 
 
 
