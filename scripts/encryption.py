@@ -161,6 +161,7 @@ def simple_crypt(passkey, ctx, mode : str = "enc") -> str:
 
 
 
+@scheduled_return(interval=.01)
 def ceasar(ctx, indent : int = 0) -> str:
     ctx = list(ctx)
 
@@ -184,6 +185,7 @@ def ceasar(ctx, indent : int = 0) -> str:
     return "".join(ctx)
 
 
+@scheduled_return(interval=.01)
 def reverse_ceasar(ctx, indent : int = 0) -> str:
 
     return ceasar(ctx , -indent)

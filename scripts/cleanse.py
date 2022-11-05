@@ -26,7 +26,9 @@ def main():
         with Dir_Reset.from_string("data/user_data") as cur :
             for path in cur.pathlibdirs :
                 if path.stem == "users" :
-                    continue
+                    with path.open("wt") as w_f :
+                        w_f.write("{}")
+                        continue
 
                 path : Path
                 path.unlink()

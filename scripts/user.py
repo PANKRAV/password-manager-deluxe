@@ -388,6 +388,8 @@ Password : {pwd}""")
         for idx , key in enumerate(_json.keys(), start=1) :
             print(f"{idx}.{key}")
         input("Continue :")
+        loop_switch()
+        return
 
     def enc_copy(self) -> str :
         _json = self.pwd_json
@@ -398,7 +400,18 @@ Password : {pwd}""")
         return
 
     def dec_copy(self) -> str :
-        ...
+        _json = self.pwd_json
+        _json : Dict = json.loads(_json)
+        for name, acc in _json.items() :
+            enc_pwd = acc["pwd"]
+            dec_pwd = self.ecnryption.decrypt(enc_pwd)
+            _json[name]["pwd"] = dec_pwd
+        
+        print(_json)
+        
+        input("Continue :")
+        loop_switch()
+        return
 
 
 

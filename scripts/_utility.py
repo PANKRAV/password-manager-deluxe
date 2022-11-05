@@ -276,6 +276,26 @@ def loop_switch() -> None :
     os.system("cls||clear")
 
 
+class Timeout :
+
+    def __init__(self, _interval : float|int) -> None:
+        self._interval = _interval
+        self._event = threading.Event()
+
+
+    def sleep(self) :
+        time.sleep(self._interval)
+        self._event.set()
+        return
+
+    def __enter__(self) :
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as exec :
+            exec.map(self.sleep, ())
+
+
+        
+    def __exit__(self, exc_type, exc_val, exc_tb) :
+        loop_switch()
 
 
 class Dir_Reset :
