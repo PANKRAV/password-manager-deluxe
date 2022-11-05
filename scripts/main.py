@@ -1,3 +1,4 @@
+from __future__ import annotations
 #MYMODULES
 from _utility import _init
 from variables import MAINLOOP, USERLOOP, CHOICEFILTER
@@ -11,6 +12,7 @@ import os
 from getpass import getpass
 from pwinput import pwinput
 import sys
+from typing import TYPE_CHECKING
 
 
 
@@ -19,12 +21,18 @@ import sys
 
 
 
-def main():
+def main(*argsv):
 
     from variables import user_data
     import encryption as enc
     from user import User
-    from _utility import loop_switch, Dir_Reset, get_dirs, _quit
+    from admin import Admin
+    from _utility import loop_switch, Dir_Reset, get_dirs, _quit, finalize
+
+    @atexit.register
+    def _atexit() -> None :
+        finalize()
+        
 
     while MAINLOOP:
         os.system("cls||clear")
@@ -231,4 +239,4 @@ def main():
 if __name__ == "__main__" :
     os.system("Title Password manager")
     _init()
-    main()
+    main(sys.argv)

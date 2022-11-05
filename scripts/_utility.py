@@ -1,4 +1,6 @@
 #PYTHONMODULES
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from ast import Tuple
 import json
 from pathlib import Path
@@ -12,6 +14,7 @@ import functools
 import concurrent.futures
 import logging
 from msvcrt import getch, getche
+import atexit
 
 
 
@@ -191,6 +194,12 @@ def handle_file(path : Path, opt : str = "fetch", mode : str = "norm") -> dict :
 
     return _json
 
+def finalize() :
+    from user import User
+    from admin import Admin
+    print("finalizing")
+    User.reset_encryption()
+    Admin.reset_admin()
 
 async def minimal_time(func, delay) :
     ...

@@ -511,3 +511,15 @@ Password : {pwd}""")
 
         else :
             raise BadUserSetup("User was setted up incorrectly")
+
+
+
+        def reset(self) :
+            ...
+
+    @staticmethod
+    def reset_encryption() :
+        from variables import users_to_reset          
+        for user in users_to_reset :
+            user : User
+            user.reset()
