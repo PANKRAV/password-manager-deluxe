@@ -1,7 +1,9 @@
+"""Main script containing a simple flow control and almost all user I/O"""
+
 from __future__ import annotations
 #MYMODULES
-from _utility import _init
-from variables import MAINLOOP, USERLOOP, CHOICEFILTER
+from modules._utility import _init
+from modules.variables import MAINLOOP, USERLOOP, CHOICEFILTER
 
 
 
@@ -12,7 +14,7 @@ import os
 from getpass import getpass
 from pwinput import pwinput
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 
 
@@ -21,23 +23,32 @@ from typing import TYPE_CHECKING
 
 
 
-def main(*argsv):
+def main(argsv : List):
+    """Main function only takes sys.argv as args"""
 
-    from variables import user_data
-    import encryption as enc
-    from user import User
-    from admin import Admin
-    from _utility import loop_switch, Dir_Reset, get_dirs, _quit, finalize
+    from modules.variables import user_data
+    import modules.encryption as enc
+    from modules.user import User
+    from modules.admin import Admin
+    from modules._utility import loop_switch, Dir_Reset, get_dirs, _quit, finalize
 
     @atexit.register
     def _atexit() -> None :
         finalize()
-        
+
+    try :
+        if argsv[1] in ("1", "2") :
+            mode = argsv[1]
+            tmp = 1
+    except IndexError :
+        tmp = 0
 
     while MAINLOOP:
-        os.system("cls||clear")
-
-        mode = input("mode:\n1.new user\n2.user\n3.exit\nChoice:")
+        os.system("cls||clear")   
+        if tmp != 1 :
+            mode = input("mode:\n1.new user\n2.user\n3.exit\nChoice:")
+        else :
+            tmp = 0
 
         while CHOICEFILTER:
 
@@ -83,7 +94,7 @@ def main(*argsv):
 
             key = pwinput(prompt = "Password:")
 
-            while CHOICEFILTER:
+            while CHOICEFILTER :
 
                 if key == pwinput(prompt = "Confirm password:"):
                     loop_switch()
@@ -120,6 +131,7 @@ def main(*argsv):
 
                     while CHOICEFILTER : #not exactly a CHOICEFILTER
                         if _user.check_key(in_key) :
+                            _user.access()
                             loop_switch()
                             break
 
@@ -192,7 +204,7 @@ def main(*argsv):
 
                     while CHOICEFILTER : #not exactly a CHOICEFILTER
                         if _user.check_key(in_key) :
-                            _user.acess()
+                            _user.access()
                             break
 
                         else :

@@ -1,4 +1,9 @@
-from _utility import Dir_Reset
+"""
+A quality of life script, used for debugging to quickly delete all of the data files in the data directory
+(except users.json which is just cleared)
+"""
+
+from modules._utility import Dir_Reset
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -17,7 +22,7 @@ def main():
             for path in cur.pathlibdirs :
                 path : Path
                 path.unlink()
-
+        print(os.getcwd())
         with Dir_Reset.from_string("data/password_data") as cur :
             for path in cur.pathlibdirs :
                 path : Path

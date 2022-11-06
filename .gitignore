@@ -10,7 +10,7 @@ bibliography.txt
 SETUP
 
 #Will remove these soon
-scripts/admin.py
+scripts/modules/admin.py
 
 
 

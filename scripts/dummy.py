@@ -1,5 +1,12 @@
+"""
+A script used for debugging to create three(3) dummy files in :
+- data/encryption_data
+- data/password_data
+- data/user_data
+"""
+
 from pathlib import Path
-from _utility import Dir_Reset
+from modules._utility import Dir_Reset
 import os
 from dotenv import load_dotenv
 import json
