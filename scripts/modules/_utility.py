@@ -42,9 +42,9 @@ def _init() -> Dict:
     os.chdir(abspath.parent.parent.parent)
 
     global_security_init()
+    users_to_reset_init()
     user_data_init()
     global_logging_init()
-    users_to_reset_init()
 
     from .variables import GLOBAL_LOGGING
     format = "%(asctime)s: %(message)s"

@@ -251,4 +251,8 @@ def main(argsv : List):
 if __name__ == "__main__" :
     os.system("Title Password manager")
     _init()
-    main(sys.argv)
+    try :
+        main(sys.argv)
+    except KeyboardInterrupt :
+        print("KeyboardInterrupt")
+        sys.exit(0)

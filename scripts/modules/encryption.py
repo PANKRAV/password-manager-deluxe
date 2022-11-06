@@ -225,7 +225,7 @@ class Encryption :
 
                 self.dec_content = rsa.decrypt(self.enc_content, self.privateKey).decode()
 
-        
+
 
 
 
@@ -236,16 +236,16 @@ class Encryption :
 
 
 
-    
+
 
     class UserEnc :
         if TYPE_CHECKING :
             from .user import User
 
-        
+
         def __init__(self, user : User) -> None:
             publicKey, privateKey = rsa.newkeys(GLOBAL_SECURITY)
-            
+
             self.user = user
             self.key = self.user.key
             self.enc_json = json.loads(self.user.enc_json)
@@ -289,9 +289,23 @@ class Encryption :
             return json.dumps(dec_json)
 
 
-
+        
         def reset(self) :
-            ...
+            publicKey, privateKey = rsa.newkeys(GLOBAL_SECURITY)
+
+            self.publicKey = publicKey
+            self.privateKey = privateKey
+            enc_publicKey = simplecrypt.encrypt(self.key, publicKey.save_pkcs1())
+            enc_publicKey = enc_publicKey.decode("latin-1")
+
+
+            enc_privateKey = simplecrypt.encrypt(self.key, privateKey.save_pkcs1())
+            enc_privateKey = enc_privateKey.decode("latin-1")
+            self.user.enc_json = {"publicKey" : enc_publicKey, "privateKey" : enc_privateKey, "security" : GLOBAL_SECURITY}
+            del publicKey, privateKey
+
+
+            
 
 
         

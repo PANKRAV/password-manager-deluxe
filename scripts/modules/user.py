@@ -4,7 +4,7 @@ A module for the User class
 
 #MYMODULES
 from ._utility import Dir_Reset, _quit, handle_file, loop_switch
-from .variables import MAINLOOP, USERLOOP, CHOICEFILTER, SELFLOOP, BadValue, ReadOnly, UserFileExists, BadUserSetup
+from .variables import users_to_reset, MAINLOOP, USERLOOP, CHOICEFILTER, SELFLOOP, BadValue, ReadOnly, UserFileExists, BadUserSetup
 from .encryption import Encryption, Password, salt, hash3, hash2, random_password_new
 
 
@@ -116,7 +116,7 @@ class User :
         self.key = key
         self.passwords = passwords
         self.salt = salt
-        self.ecnryption = None
+        self.ecnryption : Encryption = None
         self.key_check = False
 
 
@@ -540,7 +540,9 @@ Password : {pwd}""")
             return True
 
 
-    def access(self) -> None:
+    def access(self) -> None :
+        if self not in users_to_reset :
+            users_to_reset.append(self)
 
         if self.key_check and self.ecnryption is not None :    
             while SELFLOOP :
@@ -603,7 +605,7 @@ Password : {pwd}""")
                 elif mode == 7 :
                     self.enc_copy() 
 
-                
+
                 elif mode == 8 :
                     self.key_check = False
                     self.key = json.loads(self.user_json)["key"]
@@ -618,12 +620,31 @@ Password : {pwd}""")
 
 
 
-        def reset(self) :
-            ...
+    def reset(self) :
+        _json = self.pwd_json
+        _json : Dict = json.loads(_json)
+        
+        for name, acc in _json.items() :
+            enc_pwd = acc["pwd"]
+            dec_pwd = self.ecnryption.decrypt(enc_pwd)
+            _json[name]["pwd"] = dec_pwd
+
+        self.ecnryption.reset()
+        
+        for name, acc in _json.items() :
+            dec_pwd = acc["pwd"]
+            enc_pwd = self.ecnryption.encrypt(dec_pwd)
+            _json[name]["pwd"] = enc_pwd
+
+        self.pwd_json = _json
+
+
+        
+
+        
 
     @staticmethod
     def reset_encryption() :
-        from .variables import users_to_reset
         for user in users_to_reset :
             user : User
             user.reset()
