@@ -437,7 +437,7 @@ Password : {pwd}""")
         loop_switch()
         return
 
-                
+
 
     def mod_pwd(self) -> None :
         ...
@@ -507,7 +507,7 @@ Password : {pwd}""")
 
 
 
-    
+
 
 
     def __call__(self) -> None:
@@ -581,7 +581,7 @@ Password : {pwd}""")
                 if mode == 1 :
                     self.get_pwd()
 
-                
+
                 elif mode == 2 :
                     self.add_pwd()
 
@@ -639,9 +639,9 @@ Password : {pwd}""")
         self.pwd_json = _json
 
 
-        
 
-        
+
+
 
     @staticmethod
     def reset_encryption() :

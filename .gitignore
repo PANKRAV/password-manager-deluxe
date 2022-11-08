@@ -11,6 +11,7 @@ SETUP
 
 #Will remove these soon
 scripts/modules/admin.py
+scripts/modules/logs.py
 
 
 

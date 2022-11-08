@@ -2,7 +2,8 @@
 A quality of life script, used for debugging to quickly delete all of the data files in the data directory
 (except users.json which is just cleared)
 """
-
+import sys
+sys.path.insert(0, 'C:\\Users\\USERPC\\Desktop\\python\\ey\\double_deluxe\\src\\modules')
 from modules._utility import Dir_Reset
 import os
 from pathlib import Path

@@ -4,7 +4,8 @@ A script used for debugging to create three(3) dummy files in :
 - data/password_data
 - data/user_data
 """
-
+import sys
+sys.path.insert(0, 'C:\\Users\\USERPC\\Desktop\\python\\ey\\double_deluxe\\src\\modules')
 from pathlib import Path
 from modules._utility import Dir_Reset
 import os
