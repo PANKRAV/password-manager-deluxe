@@ -11,6 +11,7 @@ P.S
 For a complete version of the project with _sadly less readable code_, for now, [see](https://github.com/PANKRAV/password-manager):
 
 <hr>
+<hr>
 <p>
 <span style="font-size:0.5em">
 <b><i>WARNINGS :</b></i>
