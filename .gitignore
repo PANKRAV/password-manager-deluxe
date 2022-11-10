@@ -10,8 +10,10 @@ bibliography.txt
 SETUP
 
 #Will remove these soon
-scripts/modules/admin.py
-scripts/modules/logs.py
+src/modules/admin.py
+src/modules/logs.py
+dist/modules/admin.py
+dist/modules/logs.py
 
 
 
