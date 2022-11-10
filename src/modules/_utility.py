@@ -276,50 +276,26 @@ def loop_switch() -> None :
     os.system("cls||clear")
 
 
-class Timeout :
+class Timeout:
 
-    def __init__(self, _interval : float|int, content : str) -> None:
-        self._interval = _interval
-        self.content = content
-        self._event = threading.Event()
-        self.lock = threading.Lock()
+    def __init__(self, _interval : int) -> None:
+        self._interval = int(_interval)
+        self.in_check = None
         self.cur = 0
-
-
-    def sleep(self) :
-        secs, decs = divmod(self._interval, 1)
-        while self.cur <= secs :
-            self.lock.release()
-            time.sleep(1)
-            self.lock.acquire()
-            self.cur += 1
-            yield self.cur
         
-        self._event.set()
-        #This shoud be handled
-        raise TimeoutError
-
     
-    def show(self) :
-        stdout_handle = sys.stdout
-        stdin_handle = sys.stdin
 
-        with stdout_handle as f :        
-            while not self._event.is_set() :
-                self.lock.acquire()           
-                f.write(f"{self.content}\n Timeout : {self._interval - self.cur}")
-                self.lock.release()
-
-    def __enter__(self) :
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as exec :
-            exec.map(self.sleep, ())
-            exec.map(self.show, ())
+    def func(self) :
+        if self.in_check is None :
+            os.system("cls || clear")
+            print("Continue :")
 
 
-        
-    def __exit__(self, exc_type, exc_val, exc_tb) :
-        loop_switch()
-        print("Timeout occured")
+    def run(self) :
+        self.timer = threading.Timer(self._interval, self.func)
+        self.timer.daemon = True
+        self.timer.start()
+        self.in_check = input(f"Timeout in {self._interval} seconds or input anything to Continue :")
 
 
 class Dir_Reset :

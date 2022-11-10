@@ -3,7 +3,7 @@ A module for the User class
 """
 
 #MYMODULES
-from ._utility import Dir_Reset, _quit, handle_file, loop_switch
+from ._utility import Dir_Reset, _quit, handle_file, loop_switch, Timeout
 from .variables import users_to_reset, MAINLOOP, USERLOOP, CHOICEFILTER, SELFLOOP, BadValue, ReadOnly, UserFileExists, BadUserSetup
 from .encryption import Encryption, Password, salt, hash3, hash2, random_password_new
 
@@ -353,6 +353,7 @@ class User :
         while acc_name not in _json.keys() :
             acc_name = input("Account does not exist\nGive a new name :")
 
+        tmp_t = Timeout(60)
         _json = _json[acc_name]
         username = _json["username"]
         email = _json["email"]
@@ -364,7 +365,7 @@ Username : {username}
 E-Mail : {email}
 Password : {dec_pwd}""")
 
-        input("Continue :")
+        tmp_t.run()
         loop_switch()
         return
 
@@ -428,19 +429,178 @@ Password : {dec_pwd}""")
         _json[acc_name] = {"username" : username, "pwd" : enc_pwd, "email": email}
         self.pwd_json = _json
         print("Account configured")
+        tmp_t = Timeout(60)
         print(f"""
 Account : {acc_name}
 Username : {username}
 E-Mail : {email}
 Password : {pwd}""")
-        input("Continue :")
+        tmp_t.run()
         loop_switch()
         return
 
 
 
     def mod_pwd(self) -> None :
-        ...
+        _json = self.pwd_json
+        _json : Dict = json.loads(_json)
+        acc_name = input("Account name :")
+        while acc_name not in _json.keys() :
+            acc_name = input("Account does not exist\nGive a new name :")
+        
+        while USERLOOP :
+            username = _json[acc_name]["username"]
+            email = _json[acc_name]["email"]
+            enc_pwd = _json[acc_name]["pwd"]
+            dec_pwd = self.ecnryption.decrypt(enc_pwd)
+            tmp_t = Timeout(60)
+
+            print(f"""
+Current :
+Account : {acc_name}
+Username : {username}
+E-Mail : {email}
+Password : {dec_pwd}""")
+            tmp_t.run()
+
+            print("What would you like to modify")
+            mode = input(
+"""
+1.account name:
+2.email
+3.username
+4.password
+5.view current
+6.Back
+choice:"""
+)   
+            while CHOICEFILTER:               
+
+                try:
+                    mode = int(mode)               
+                except ValueError:
+                    mode = input("Input needs to be an integer\nNew choice:")
+                    continue
+
+
+                if mode not in (1, 2, 3, 4, 5, 6) :
+                    mode = input("input needs to be an integer between 1 and 5\nNew choice:")
+                    continue
+
+                break
+
+
+            
+            if mode == 1 :
+                while CHOICEFILTER :
+                    change_text = input("New account name:")
+
+                    if change_text in list(_json.keys()):
+
+                        print("Account already exists")
+
+                    else:
+                        break
+
+                _json[change_text] = _json.pop(acc_name)
+                acc_name = change_text
+
+            elif mode == 2 :
+                while CHOICEFILTER :
+
+                    change_text = input("New email:")
+
+                    if change_text != change_text.rstrip():
+                        print("Email can't have a whitespace")
+
+                    else:
+                        break
+
+
+
+
+                _json[acc_name]["email"] = change_text
+            
+            elif mode == 3 :
+                change_text = input("new username:")
+                _json[acc_name]["username"] = change_text
+
+            elif mode == 4 :
+                while True :
+                    _mode = input("1.Choose a new password\n2.Generate a new random password\nChoice :")
+
+                    while CHOICEFILTER :
+                        try:
+                            _mode = int(_mode)               
+                        except ValueError:
+                            _mode = input("Input needs to be an integer\nNew choice:")
+                            continue
+
+
+                        if _mode not in (1, 2) :
+                            _mode = input("input needs to be an integer between 1 and 2\nNew choice:")
+                            continue
+
+                        break
+
+                    if _mode == 1 :
+                        pwd = pwinput(prompt = "Password :")
+                        pwinput(prompt = "Confirm Password") 
+                            
+                    
+                    else :#2
+                        while True:
+                            try:
+                                length = int(input("Password length :"))
+                                break  
+
+                            except ValueError:
+                                length = input("choice needs to be an integer\nnew choice:")
+
+                        pwd = random_password_new(length)
+                        print(f"Your password is {pwd}")
+                        choice = input("For a different password input \"yes\" :")
+                        if not choice.upper() == "YES":
+                            break
+                            
+
+                        
+                    new_enc_pwd = self.ecnryption.encrypt(pwd)
+                    _json[acc_name]["pwd"] = new_enc_pwd
+            
+            elif mode == 5 :
+                #self.pwd_json = _json
+                continue
+
+            else :
+                #self.pwd_json = _json
+                break
+            
+            self.pwd_json = _json
+            done = input("Are you done with the changes?\n1.Yes\n2.No\nChoice:")
+
+            while CHOICEFILTER:
+                try:
+                    done = int(done)               
+                except ValueError:
+                    done = input("Input needs to be an integer\nNew choice:")
+                    continue
+
+
+                if done not in (1, 2) :
+                    done = input("input needs to be an integer between 1 and 2\nNew choice:")
+                    continue
+
+                break
+
+            
+            if done == 1:
+                loop_switch()
+                return
+            
+            else :
+                loop_switch()
+                continue
 
     def del_pwd(self) -> None :
         _json = self.pwd_json
@@ -485,8 +645,9 @@ Password : {pwd}""")
     def enc_copy(self) -> str :
         _json = self.pwd_json
         _json = json.loads(_json)
+        tmp_t = Timeout(60)
         print(_json)
-        input("Continue :")
+        tmp_t.run()
         loop_switch()
         return
 
@@ -498,9 +659,11 @@ Password : {pwd}""")
             dec_pwd = self.ecnryption.decrypt(enc_pwd)
             _json[name]["pwd"] = dec_pwd
         
+        tmp_t = Timeout(60)
+
         print(_json)
         
-        input("Continue :")
+        tmp_t.run()
         loop_switch()
         return
 

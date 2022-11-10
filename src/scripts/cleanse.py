@@ -4,7 +4,7 @@ A quality of life script, used for debugging to quickly delete all of the data f
 """
 import sys
 sys.path.insert(0, 'C:\\Users\\USERPC\\Desktop\\python\\ey\\double_deluxe\\src\\modules')
-from modules._utility import Dir_Reset
+from scriptsutil import Dir_Reset
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -16,7 +16,7 @@ debug = os.getenv("DEBUG")
 
 def main():
     abspath = Path(os.path.abspath(__file__))
-    os.chdir(abspath.parent.parent)
+    os.chdir(abspath.parent.parent.parent)
 
     if debug == "1":
         with Dir_Reset.from_string("data/encryption_data") as cur :
