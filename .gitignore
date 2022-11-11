@@ -1,5 +1,6 @@
 data/**
 test/**
+tests/**
 log/**
 logs/**
 .vscode
@@ -8,6 +9,7 @@ logs/**
 encryption_data/**
 bibliography.txt
 SETUP
+Untitled.png
 
 
 
