@@ -5,7 +5,7 @@ A module for the User class
 #MYMODULES
 from ._utility import Dir_Reset, _quit, handle_file, loop_switch, Timeout
 from .variables import users_to_reset, MAINLOOP, USERLOOP, CHOICEFILTER, SELFLOOP, BadValue, ReadOnly, UserFileExists, BadUserSetup
-from .encryption import Encryption, Password, salt, hash3, hash2, random_password_new
+from .encryption import Encryption, Password, salt, hash3, hash2, random_password_new, ceasar, reverse_ceasar
 
 
 
@@ -275,7 +275,7 @@ class User :
 
             with Path(_file).open("xt") as w_f :
                 dct = {"name" : name, "key" : key, "salt" : _salt}
-                _json = json.dumps(dct)
+                _json = json.dumps(dct, indent=4)
                 w_f.write(_json)
 
 
@@ -349,6 +349,12 @@ class User :
     def get_pwd(self) -> None :
         _json = self.pwd_json
         _json : Dict = json.loads(_json)
+        if _json == {} :
+            print("There are no accounts yet, maybe create some")
+            input("Continue :")
+            loop_switch()
+            return
+
         acc_name = input("Account name :")
         while acc_name not in _json.keys() :
             acc_name = input("Account does not exist\nGive a new name :")
@@ -359,6 +365,7 @@ class User :
         email = _json["email"]
         enc_pwd = _json["pwd"]
         dec_pwd = self.ecnryption.decrypt(enc_pwd)
+        dec_pwd = reverse_ceasar(dec_pwd, 6)
         print(f"""
 Account : {acc_name}
 Username : {username}
@@ -405,8 +412,15 @@ Password : {dec_pwd}""")
                 break
 
             if mode == 1 :
-                pwd = pwinput(prompt = "Password :")
-                pwinput(prompt = "Confirm Password") 
+                while CHOICEFILTER :
+                    pwd = pwinput(prompt = "Password :")
+                    check_pwd = pwinput(prompt = "Confirm Password :") 
+                    if check_pwd != pwd :
+                        print("Wrong confirmation\nTry again")
+                        continue
+                    break
+                break
+                 
                     
             
             else :#2
@@ -424,8 +438,9 @@ Password : {dec_pwd}""")
                 if not choice.upper() == "YES":
                     break
 
-
-        enc_pwd = self.ecnryption.encrypt(pwd)
+        
+        ces_pwd = ceasar(pwd, 6)
+        enc_pwd = self.ecnryption.encrypt(ces_pwd)
         _json[acc_name] = {"username" : username, "pwd" : enc_pwd, "email": email}
         self.pwd_json = _json
         print("Account configured")
@@ -444,6 +459,12 @@ Password : {pwd}""")
     def mod_pwd(self) -> None :
         _json = self.pwd_json
         _json : Dict = json.loads(_json)
+        if _json == {} :
+            print("There are no accounts yet, maybe create some")
+            input("Continue :")
+            loop_switch()
+            return
+
         acc_name = input("Account name :")
         while acc_name not in _json.keys() :
             acc_name = input("Account does not exist\nGive a new name :")
@@ -453,6 +474,7 @@ Password : {pwd}""")
             email = _json[acc_name]["email"]
             enc_pwd = _json[acc_name]["pwd"]
             dec_pwd = self.ecnryption.decrypt(enc_pwd)
+            dec_pwd = reverse_ceasar(dec_pwd, 6)
             tmp_t = Timeout(60)
 
             print(f"""
@@ -544,8 +566,15 @@ choice:"""
                         break
 
                     if _mode == 1 :
-                        pwd = pwinput(prompt = "Password :")
-                        pwinput(prompt = "Confirm Password") 
+                        while CHOICEFILTER :
+                            pwd = pwinput(prompt = "Password :")
+                            check_pwd = pwinput(prompt = "Confirm Password :") 
+                            if check_pwd != pwd :
+                                print("Wrong confirmation\nTry again")
+                                continue
+                            break
+                        break
+                            
                             
                     
                     else :#2
@@ -605,6 +634,12 @@ choice:"""
     def del_pwd(self) -> None :
         _json = self.pwd_json
         _json : Dict = json.loads(_json)
+        if _json == {} :
+            print("There are no accounts yet, maybe create some")
+            input("Continue :")
+            loop_switch()
+            return
+
         acc_name = input("Account name :")
         while acc_name not in _json.keys() :
             acc_name = input("Account does not exist\nGive a new name :")
@@ -636,6 +671,12 @@ choice:"""
     def list_pwds(self) -> str :
         _json = self.pwd_json
         _json : Dict = json.loads(_json)
+        if _json == {} :
+            print("There are no accounts yet, maybe create some")
+            input("Continue :")
+            loop_switch()
+            return
+
         for idx , key in enumerate(_json.keys(), start=1) :
             print(f"{idx}.{key}")
         input("Continue :")
@@ -645,6 +686,12 @@ choice:"""
     def enc_copy(self) -> str :
         _json = self.pwd_json
         _json = json.loads(_json)
+        if _json == {} :
+            print("There are no accounts yet, maybe create some")
+            input("Continue :")
+            loop_switch()
+            return
+
         tmp_t = Timeout(60)
         print(_json)
         tmp_t.run()
@@ -654,9 +701,16 @@ choice:"""
     def dec_copy(self) -> str :
         _json = self.pwd_json
         _json : Dict = json.loads(_json)
+        if _json == {} :
+            print("There are no accounts yet, maybe create some")
+            input("Continue :")
+            loop_switch()
+            return
+
         for name, acc in _json.items() :
             enc_pwd = acc["pwd"]
             dec_pwd = self.ecnryption.decrypt(enc_pwd)
+            dec_pwd + reverse_ceasar(dec_pwd, 6)
             _json[name]["pwd"] = dec_pwd
         
         tmp_t = Timeout(60)

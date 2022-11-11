@@ -174,12 +174,12 @@ def ceasar(ctx, indent : int = 0) -> str:
             try:
                 new_char = RAN_CHAR_SEQ[_index + indent]
             
-            except IndexError:
-                if _index + indent > 72:
-                    new_char = RAN_CHAR_SEQ[indent]
+            except Exception:
+                if _index + indent > 71:
+                    new_char = RAN_CHAR_SEQ[indent - 71 - 1 + _index]
                 
                 elif _index + indent < 0:
-                    new_char = RAN_CHAR_SEQ[72 - indent]
+                    new_char = RAN_CHAR_SEQ[71 - _index - indent]
             ctx[idx] = new_char
 
     return "".join(ctx)
