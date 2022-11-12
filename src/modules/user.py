@@ -244,7 +244,7 @@ class User :
                 key : str = _json["key"] #hashed value
                 salt : str = _json["salt"]
 
-            return cls(name = name, key = key, salt = salt)
+            return cls(name = name, key = key, salt = salt, passwords = len(_json))
         
         return
 
@@ -358,6 +358,10 @@ class User :
         acc_name = input("Account name :")
         while acc_name not in _json.keys() :
             acc_name = input("Account does not exist\nGive a new name :")
+        
+        for _idx, acc in enumerate(_json.keys()) :
+            if acc == acc_name :
+                idx = _idx
 
         tmp_t = Timeout(60)
         _json = _json[acc_name]
@@ -439,7 +443,7 @@ Password : {dec_pwd}""")
                     break
 
         
-        ces_pwd = ceasar(pwd, 6)
+        ces_pwd = ceasar(pwd, self.passwords - 1)
         enc_pwd = self.ecnryption.encrypt(ces_pwd)
         _json[acc_name] = {"username" : username, "pwd" : enc_pwd, "email": email}
         self.pwd_json = _json
@@ -469,6 +473,10 @@ Password : {pwd}""")
         while acc_name not in _json.keys() :
             acc_name = input("Account does not exist\nGive a new name :")
         
+        for _idx, acc in enumerate(_json.keys()) :
+            if acc == acc_name :
+                idx = _idx
+        
         while USERLOOP :
             username = _json[acc_name]["username"]
             email = _json[acc_name]["email"]
@@ -484,6 +492,7 @@ Username : {username}
 E-Mail : {email}
 Password : {dec_pwd}""")
             tmp_t.run()
+            loop_switch()
 
             print("What would you like to modify")
             mode = input(
@@ -710,7 +719,7 @@ choice:"""
         for name, acc in _json.items() :
             enc_pwd = acc["pwd"]
             dec_pwd = self.ecnryption.decrypt(enc_pwd)
-            dec_pwd + reverse_ceasar(dec_pwd, 6)
+            dec_pwd = reverse_ceasar(dec_pwd, 6)
             _json[name]["pwd"] = dec_pwd
         
         tmp_t = Timeout(60)

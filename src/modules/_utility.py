@@ -43,7 +43,7 @@ def _init() -> Dict:
 
     global_security_init()
     users_to_reset_init()
-    user_data_init()
+    
     global_logging_init()
 
     from .variables import GLOBAL_LOGGING
@@ -83,6 +83,7 @@ def _init() -> Dict:
                     with open("users.json", "x") :
                         pass
         
+    user_data_init()
 
 def _quit() -> None :
     sys.exit(0)
