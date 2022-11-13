@@ -1,15 +1,19 @@
-from scriptsutil import Dir_Reset
+from helpers.scriptsutil import Dir_Reset
 from pathlib import Path
 import os
 import sys
-from typing import List
+from typing import List, Dict
 import json
 
-def migrate(pwd, user, enc) :
-    ...
+
+
+
+def migrate(*, name, pwd : Dict, user : Dict, enc : Dict, key : str, old_security : int, new_security : int = 2048) :
+    raise NotImplementedError
 
 
 def main(argsv : List):
+
     abspath = Path(os.path.abspath(__file__))
     os.chdir(abspath.parent)
     try :
@@ -18,13 +22,20 @@ def main(argsv : List):
         raise Exception("Security level command line argument required")
     except Exception as ex :
         raise ex("This wasn't supposed to happen")
-    old_security = argsv[1]
+    _old_security = argsv[1]
+    try :
+        argsv[2]
+    except IndexError :
+        raise Exception("Key command line argument required")
+    except Exception as ex :
+        raise ex("This wasn't supposed to happen")
+    _key = argsv[2]
 
     try :
         with Dir_Reset.from_string("migration/old") :
             with Dir_Reset.from_string("data") as cur :
-                if len(argsv) == 3 :
-                    user_name = argsv[2]
+                if len(argsv) == 4 :
+                    user_name = argsv[3]
                     if user_name not in [_dir.stem for _dir in cur.pathlibdirs] :
                         raise Exception("User file does not exist")
                 else :                  
@@ -47,7 +58,7 @@ def main(argsv : List):
         raise FileNotFoundError("Migration directory does not exists or is either empty.")
     
 
-    new_pwd, new_enc, new_user = migrate(pwd=pwd_json, user=user_data, enc=enc_json)
+    new_pwd, new_enc, new_user = migrate(name=user_name, pwd=pwd_json, user=user_data, enc=enc_json, key=_key, old_security=_old_security)
 
     with Dir_Reset.from_string("migration") as cur :
         if "NEW" not in cur.dirs :

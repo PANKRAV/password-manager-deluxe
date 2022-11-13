@@ -4,7 +4,7 @@ A quality of life script, used for debugging to quickly delete all of the data f
 """
 import sys
 sys.path.insert(0, 'C:\\Users\\USERPC\\Desktop\\python\\ey\\double_deluxe\\src\\modules')
-from scriptsutil import Dir_Reset
+from helpers.scriptsutil import Dir_Reset
 import os
 from pathlib import Path
 from dotenv import load_dotenv
