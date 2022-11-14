@@ -3,6 +3,7 @@ test/**
 tests/**
 log/**
 logs/**
+MIGRATION/**
 .vscode
 .env
 *.code-workspace
