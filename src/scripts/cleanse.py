@@ -23,7 +23,7 @@ def main():
             for path in cur.pathlibdirs :
                 path : Path
                 path.unlink()
-        print(os.getcwd())
+        
         with Dir_Reset.from_string("data/password_data") as cur :
             for path in cur.pathlibdirs :
                 path : Path

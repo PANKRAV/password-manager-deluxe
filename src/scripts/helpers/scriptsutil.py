@@ -15,7 +15,7 @@ class ReadOnly(Exception):
 
 
 class Dir_Reset :
-    root = Path(__file__).parent.parent.parent
+    root = Path(__file__).parent.parent.parent.parent
 
 
     def __init__(self, path : Path) -> None:

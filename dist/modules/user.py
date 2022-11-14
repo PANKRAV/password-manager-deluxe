@@ -28,7 +28,7 @@ class User :
         self.key = key
         self.passwords = passwords
         self.salt = salt
-        self.ecnryption : Encryption = None
+        self.ecnryption : Encryption.UserEnc = None
         self.key_check = False
 
 
