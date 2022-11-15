@@ -15,11 +15,13 @@ class ReadOnly(Exception):
 
 
 class Dir_Reset :
-    root = Path(__file__).parent.parent.parent.parent
+    root = Path(__file__).parent.parent
 
 
-    def __init__(self, path : Path) -> None:
+    def __init__(self, path : Path, *, root = None) -> None:
         self.path = path
+        if root is not None :
+            self.root = Path(root)
 
 
 
@@ -50,13 +52,13 @@ class Dir_Reset :
 
     def __exit__(self, exc_type, exc_val, exc_tb) :
         if not self.path == self.root :
-            os.chdir(Dir_Reset.root)
+            os.chdir(self.root)
 
 
     @classmethod
-    def from_string(cls, _path : str) :
+    def from_string(cls, _path : str, *, root = None) :
         _path = Path(_path)
-        return cls(_path)
+        return cls(_path, root = root)
 
 
 def get_dirs(path = os.getcwd()) -> Tuple :

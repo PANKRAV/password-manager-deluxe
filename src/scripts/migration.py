@@ -12,7 +12,13 @@ from helpers.migrationutil import ceasar, reverse_ceasar, hash3, simple_crypt
 
 
 VERBOSE = False
+REVERSE = False
 
+class BadArguments(Exception) :
+    def __init__(self, message) -> None:
+        self.message = message
+        self.message += "\nusage : python3 migarion.py [-v | --verbose] [-r | --reverse] <Security Level (power of 2)> <key (string)> <User Name (optional)>"
+        super().__init__(message)
 
 def migrate(*, pwd : Dict, user : Dict, enc : Dict, key : str, old_security : int, new_security : int = 2048) :
     new_enc = enc
@@ -48,10 +54,16 @@ def migrate(*, pwd : Dict, user : Dict, enc : Dict, key : str, old_security : in
         new_pwd[acc_name]["pwd"] = new_enc_pwd
 
 
-    return new_user, new_enc, new_user
+    return new_user, new_enc, new_pwd
     
     
 
+def reverse_migrate(*, pwd : Dict, user : Dict, enc : Dict, key : str, new_security : int = 2048) :
+    new_user = dict()
+    new_enc = dict()
+    new_pwd = dict()
+    
+    return new_user, new_enc, new_pwd
 
 
 
@@ -60,19 +72,22 @@ def main(argsv : List):
     args = [arg for arg in argsv[1:] if not arg.startswith("-")]
 
 
-    if "-v" in opts :
+    if "-v" in opts or "--verbose" in opts :
         VERBOSE = True
+    
+    if "-r" in opts or "--revese" in opts :
+        REVERSE = True
 
     abspath = Path(os.path.abspath(__file__))
     os.chdir(abspath.parent)
     try :
         args[0]
         _old_security = int(args[0])
-        level = log2(args[0])
+        level = log2(_old_security)
         if level != int(level) :
-            raise Exception("security level command line argument needs to be an integer power of 2")
+            raise BadArguments("security level command line argument needs to be an integer power of 2")
     except IndexError :
-        raise Exception("Security level command line argument required")
+        raise BadArguments("Security level command line argument required")
     except ValueError as val_ex:
         raise val_ex("security level command line argument needs to be an integer")
     except Exception as ex :
@@ -82,14 +97,14 @@ def main(argsv : List):
     try :
         args[1]
     except IndexError :
-        raise Exception("Key command line argument required")
+        raise BadArguments("Key command line argument required")
     except Exception as ex :
         raise ex("This wasn't supposed to happen")
     _key = args[1]
 
     try :
-        with Dir_Reset.from_string("MIGRATION/OLD") :
-            with Dir_Reset.from_string("data") as cur :
+        with Dir_Reset.from_string("MIGRATION/OLD") as _cur:
+            with Dir_Reset.from_string("data", root = os.path.abspath(os.getcwd())) as cur :
                 if len(args) == 3 :
                     user_name = args[2]
                     if user_name not in [_dir.stem for _dir in cur.pathlibdirs] :
@@ -99,6 +114,7 @@ def main(argsv : List):
                 
                 with Path(f"{user_name}.json").open("rt") as r_f :
                     pwd_json = json.load(r_f)
+            
             
             with Path("users.json").open("rt") as r_f :
                 user_json = json.load(r_f)
@@ -116,7 +132,11 @@ def main(argsv : List):
 
 
     try :
-        new_user, new_enc, new_pwd  = migrate(pwd=pwd_json, user=user_data, enc=enc_json, key=_key, old_security=_old_security)
+        if not REVERSE :
+            new_user, new_enc, new_pwd  = migrate(pwd=pwd_json, user=user_data, enc=enc_json, key=_key, old_security=_old_security)
+        else : 
+            new_user, new_enc, new_pwd  = reverse_migrate(pwd=pwd_json, user=user_data, enc=enc_json, key=_key)
+
     except KeyError as ex:
         print(f"An exception occured : {ex} (Probably bad json file structure)")
 
@@ -128,22 +148,25 @@ def main(argsv : List):
         
         with Dir_Reset.from_string("NEW") as _cur :
             
-            os.mkdir("user_data")            
-            os.mkdir("password_data")            
-            os.mkdir("encryption_data")
+            if "user_data" not in _cur.dirs :
+                os.mkdir("user_data") 
+            if "password_data" not in _cur.dirs :           
+                os.mkdir("password_data")
+            if "encryption_data" not in _cur.dirs :          
+                os.mkdir("encryption_data")
             
-            with Dir_Reset.from_string("user_data") :
-                with Path(f"{user_name}.json").open("xt") as w_f :
+            with Dir_Reset.from_string("user_data", root = os.path.abspath(os.getcwd())) :
+                with Path(f"{user_name}.json").open("wt") as w_f :
                     txt = json.dumps(new_user, indent=4)
                     w_f.write(txt)
             
-            with Dir_Reset.from_string("password_data") :
-                with Path(f"{user_name}.json").open("xt") as w_f :
+            with Dir_Reset.from_string("password_data", root = os.path.abspath(os.getcwd())) :
+                with Path(f"{user_name}.json").open("wt") as w_f :
                     txt = json.dumps(new_pwd, indent=4)
                     w_f.write(txt)
             
-            with Dir_Reset.from_string("encryption_data") :
-                with Path(f"{user_name}.json").open("xt") as w_f :
+            with Dir_Reset.from_string("encryption_data", root = os.path.abspath(os.getcwd())) :
+                with Path(f"{user_name}.json").open("wt") as w_f :
                     txt = json.dumps(new_enc, indent=4)
                     w_f.write(txt)
     
@@ -153,3 +176,4 @@ def main(argsv : List):
 
 if __name__ == "__main__" :
     main(sys.argv)
+    print("Executed succesfully")
