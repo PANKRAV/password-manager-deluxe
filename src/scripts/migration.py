@@ -61,7 +61,8 @@ def migrate(*, name, pwd : Dict, user : Dict, enc : Dict, key : str, old_securit
 
 def reverse_migrate(*,name, pwd : Dict, user : Dict, enc : Dict, key : str, new_security : int = 2048) :
     new_user = dict()
-    new_enc = dict()
+    new_enc = enc
+    new_enc.pop("security")
     new_pwd = dict()
 
     hashed_key = user["key"]
