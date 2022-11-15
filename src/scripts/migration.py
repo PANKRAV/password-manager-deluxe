@@ -18,7 +18,7 @@ class BadArguments(Exception) :
     def __init__(self, message) -> None:
         self.message = message
         self.message += "\nusage : python3 migarion.py [-v | --verbose] [-r | --reverse] <Security Level (power of 2)> <key (string)> <User Name (optional)>"
-        super().__init__(message)
+        super().__init__(self.message)
 
 def migrate(*, pwd : Dict, user : Dict, enc : Dict, key : str, old_security : int, new_security : int = 2048) :
     new_enc = enc
@@ -58,16 +58,27 @@ def migrate(*, pwd : Dict, user : Dict, enc : Dict, key : str, old_security : in
     
     
 
-def reverse_migrate(*, pwd : Dict, user : Dict, enc : Dict, key : str, new_security : int = 2048) :
+def reverse_migrate(*,name, pwd : Dict, user : Dict, enc : Dict, key : str, new_security : int = 2048) :
     new_user = dict()
     new_enc = dict()
     new_pwd = dict()
+
+    hashed_key = user["key"]
+    salt = user["salt"]
+    key_check = key + salt
+    key_check = hash3(key_check)
+    if not hashed_key == key_check  :
+        raise Exception("Old key and new key don't match")
+    else :
+        new_user = user
+
     
     return new_user, new_enc, new_pwd
 
 
 
 def main(argsv : List):
+    global VERBOSE
     opts = [arg for arg in argsv[1:] if arg.startswith("-")]
     args = [arg for arg in argsv[1:] if not arg.startswith("-")]
 
@@ -118,8 +129,10 @@ def main(argsv : List):
             
             with Path("users.json").open("rt") as r_f :
                 user_json = json.load(r_f)
-                user_data = user_json[user_name]
-            
+                if not REVERSE :
+                    user_data = user_json[user_name]
+                else :
+                    user_data = user_json
             with Dir_Reset.from_string("encryption_data") as cur :
                 with Path(f"{user_name}.json").open("rt") as r_f :
                     enc_json = json.load(r_f)
@@ -135,7 +148,7 @@ def main(argsv : List):
         if not REVERSE :
             new_user, new_enc, new_pwd  = migrate(pwd=pwd_json, user=user_data, enc=enc_json, key=_key, old_security=_old_security)
         else : 
-            new_user, new_enc, new_pwd  = reverse_migrate(pwd=pwd_json, user=user_data, enc=enc_json, key=_key)
+            new_user, new_enc, new_pwd  = reverse_migrate(name=user_name, pwd=pwd_json, user=user_data, enc=enc_json, key=_key)
 
     except KeyError as ex:
         print(f"An exception occured : {ex} (Probably bad json file structure)")
@@ -176,4 +189,6 @@ def main(argsv : List):
 
 if __name__ == "__main__" :
     main(sys.argv)
+    if VERBOSE :
+        pass
     print("Executed succesfully")
