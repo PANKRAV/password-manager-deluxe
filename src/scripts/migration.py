@@ -20,7 +20,7 @@ class BadArguments(Exception) :
         self.message += "\nusage : python3 migarion.py [-v | --verbose] [-r | --reverse] <Security Level (power of 2)> <key (string)> <User Name (optional)>"
         super().__init__(self.message)
 
-def migrate(*, pwd : Dict, user : Dict, enc : Dict, key : str, old_security : int, new_security : int = 2048) :
+def migrate(*, name, pwd : Dict, user : Dict, enc : Dict, key : str, old_security : int, new_security : int = 2048) :
     new_enc = enc
     new_enc["security"] = new_security
 
@@ -32,6 +32,7 @@ def migrate(*, pwd : Dict, user : Dict, enc : Dict, key : str, old_security : in
     if not hashed_key == key_check  :
         raise Exception("Old key and new key don't match")
     else :
+        user["name"] = name
         new_user = user
 
 
@@ -70,7 +71,29 @@ def reverse_migrate(*,name, pwd : Dict, user : Dict, enc : Dict, key : str, new_
     if not hashed_key == key_check  :
         raise Exception("Old key and new key don't match")
     else :
-        new_user = user
+        user.pop("name")
+        new_user[name] = user
+    
+
+    publicKey = enc["publicKey"]
+    publicKey = publicKey.encode("latin-1")
+    publicKey = simple_crypt(key, publicKey, "dec")
+    publicKey = rsa.PublicKey.load_pkcs1(publicKey)
+
+    privateKey = enc["privateKey"]
+    privateKey = privateKey.encode("latin-1")
+    privateKey = simple_crypt(key, privateKey, "dec")
+    privateKey = rsa.PrivateKey.load_pkcs1(privateKey)
+
+
+    new_pwd = pwd
+    for acc_name, acc in new_pwd.items() :
+        enc_pwd = acc["pwd"]
+        dec_pwd = rsa.decrypt(enc_pwd.encode("latin-1"), priv_key=privateKey).decode("latin-1")
+        new_enc_pwd = reverse_ceasar(dec_pwd, 6)
+        new_enc_pwd = rsa.encrypt(new_enc_pwd.encode("latin-1"), pub_key=publicKey).decode("latin-1")
+        new_pwd[acc_name]["pwd"] = new_enc_pwd
+        
 
     
     return new_user, new_enc, new_pwd
@@ -146,7 +169,7 @@ def main(argsv : List):
 
     try :
         if not REVERSE :
-            new_user, new_enc, new_pwd  = migrate(pwd=pwd_json, user=user_data, enc=enc_json, key=_key, old_security=_old_security)
+            new_user, new_enc, new_pwd  = migrate(name=user_name, pwd=pwd_json, user=user_data, enc=enc_json, key=_key, old_security=_old_security)
         else : 
             new_user, new_enc, new_pwd  = reverse_migrate(name=user_name, pwd=pwd_json, user=user_data, enc=enc_json, key=_key)
 
