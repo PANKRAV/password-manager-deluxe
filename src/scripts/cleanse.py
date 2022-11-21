@@ -19,25 +19,26 @@ def main():
     os.chdir(abspath.parent.parent.parent)
 
     if debug == "1":
-        with Dir_Reset.from_string("data/encryption_data") as cur :
-            for path in cur.pathlibdirs :
-                path : Path
-                path.unlink()
-        
-        with Dir_Reset.from_string("data/password_data") as cur :
-            for path in cur.pathlibdirs :
-                path : Path
-                path.unlink()
+        with Dir_Reset.from_string("data") as _cur :
+            with Dir_Reset.from_string("encryption_data") as cur :
+                for path in cur.pathlibdirs :
+                    path : Path
+                    path.unlink()
+            
+            with Dir_Reset.from_string("password_data") as cur :
+                for path in cur.pathlibdirs :
+                    path : Path
+                    path.unlink()
 
-        with Dir_Reset.from_string("data/user_data") as cur :
-            for path in cur.pathlibdirs :
-                if path.stem == "users" :
-                    with path.open("wt") as w_f :
-                        w_f.write("{}")
-                        continue
+            with Dir_Reset.from_string("user_data") as cur :
+                for path in cur.pathlibdirs :
+                    if path.stem == "users" :
+                        with path.open("wt") as w_f :
+                            w_f.write("{}")
+                            continue
 
-                path : Path
-                path.unlink()
+                    path : Path
+                    path.unlink()
 
     elif debug == "0" :
         print("debug setting is turned off")

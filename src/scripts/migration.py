@@ -139,7 +139,7 @@ def main(argsv : List):
 
     try :
         with Dir_Reset.from_string("MIGRATION/OLD") as _cur:
-            with Dir_Reset.from_string("data", root = os.path.abspath(os.getcwd())) as cur :
+            with Dir_Reset.from_string("data") as cur :
                 if len(args) == 3 :
                     user_name = args[2]
                     if user_name not in [_dir.stem for _dir in cur.pathlibdirs] :
@@ -192,17 +192,17 @@ def main(argsv : List):
             if "encryption_data" not in _cur.dirs :          
                 os.mkdir("encryption_data")
             
-            with Dir_Reset.from_string("user_data", root = os.path.abspath(os.getcwd())) :
+            with Dir_Reset.from_string("user_data") :
                 with Path(f"{user_name}.json").open("wt") as w_f :
                     txt = json.dumps(new_user, indent=4)
                     w_f.write(txt)
             
-            with Dir_Reset.from_string("password_data", root = os.path.abspath(os.getcwd())) :
+            with Dir_Reset.from_string("password_data") :
                 with Path(f"{user_name}.json").open("wt") as w_f :
                     txt = json.dumps(new_pwd, indent=4)
                     w_f.write(txt)
             
-            with Dir_Reset.from_string("encryption_data", root = os.path.abspath(os.getcwd())) :
+            with Dir_Reset.from_string("encryption_data") :
                 with Path(f"{user_name}.json").open("wt") as w_f :
                     txt = json.dumps(new_enc, indent=4)
                     w_f.write(txt)

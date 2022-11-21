@@ -12,9 +12,12 @@ from typing import List, Dict
 import threading
 import functools
 import concurrent.futures
-import logging
-from msvcrt import getch, getche
 import atexit
+from collections import deque
+
+#THIRDPARTIES
+from msvcrt import getch, getche
+import logging
 
 
 
@@ -301,6 +304,9 @@ class Timeout:
 
 class Dir_Reset :
     root = Path(__file__).parent.parent.parent
+    stack = deque()
+    stack.append(root)
+    counter = 0
 
 
     def __init__(self, path : Path) -> None:
@@ -327,15 +333,26 @@ class Dir_Reset :
 
 
     def __enter__(self) :
-        if not self.path == self.root :       
+        if Dir_Reset.counter == 0 :
+            Dir_Reset.stack.append(Dir_Reset.root)
+        if not self.path == self.root :
+            Dir_Reset.stack.append(os.getcwd())
             os.chdir(self.path)
+            Dir_Reset.counter += 1
             return self
 
 
 
     def __exit__(self, exc_type, exc_val, exc_tb) :
         if not self.path == self.root :
-            os.chdir(Dir_Reset.root)
+            
+            Dir_Reset.counter -= 1
+            if Dir_Reset.counter < 0 :
+                logging.debug("Wrong instance count")
+                raise Exception("Wrong Dir_reset instance count")
+            
+            os.chdir(Dir_Reset.stack.pop())
+            
 
 
     @classmethod

@@ -45,28 +45,47 @@ _json = {
 }
 
 
-def main():
-    abspath = Path(os.path.abspath(__file__))
-    os.chdir(abspath.parent.parent.parent)
+def main(argsv):
+    if len(argsv) > 1 :
+        try :
+            abspath = Path(os.path.abspath(argsv[1]))
+            os.chdir(abspath)
+        except FileNotFoundError :
+            print("Target directory does not exist\nCreating target directory")
+            os.mkdir(abspath)
+            os.chdir(abspath)
+    else :
+        abspath = Path(os.path.abspath(__file__))
+        os.chdir(abspath.parent.parent.parent)
+
 
     if debug == "1":
-        with Dir_Reset.from_string("data/encryption_data") as cur :
-            if "dummy.json" in cur.dirs :
-                print("Overwriting previous data/encryption_data json file")
-            with Path("dummy.json").open("wt") as w_f :
-                w_f.write(json.dumps(_json["enc_json"], indent=4))
+        if "data" not in os.listdir() :
+            os.mkdir("data")
+        with Dir_Reset.from_string("data") as _cur :
+            if "encryption_data" not in _cur.dirs :
+                os.mkdir("encryption_data")
+            with Dir_Reset.from_string("encryption_data") as cur :
+                if "dummy.json" in cur.dirs :
+                    print("Overwriting previous data/encryption_data json file")
+                with Path("dummy.json").open("wt") as w_f :
+                    w_f.write(json.dumps(_json["enc_json"], indent=4))
 
-        with Dir_Reset.from_string("data/password_data") as cur :
-            if "dummy.json" in cur.dirs :
-                print("Overwriting previous data/password_data json file")
-            with Path("dummy.json").open("wt") as w_f :
-                w_f.write(json.dumps(_json["pwd_json"], indent=4))
+            if "password_data" not in _cur.dirs :
+                os.mkdir("password_data")
+            with Dir_Reset.from_string("password_data") as cur :
+                if "dummy.json" in cur.dirs :
+                    print("Overwriting previous data/password_data json file")
+                with Path("dummy.json").open("wt") as w_f :
+                    w_f.write(json.dumps(_json["pwd_json"], indent=4))
 
-        with Dir_Reset.from_string("data/user_data") as cur :
-            if "dummy.json" in cur.dirs :
-                print("Overwriting previous data/user_data json file")
-            with Path("dummy.json").open("wt") as w_f :
-                w_f.write(json.dumps(_json["user_json"], indent=4))
+            if "user_data" not in _cur.dirs :
+                os.mkdir("user_data")
+            with Dir_Reset.from_string("user_data") as cur :
+                if "dummy.json" in cur.dirs :
+                    print("Overwriting previous data/user_data json file")
+                with Path("dummy.json").open("wt") as w_f :
+                    w_f.write(json.dumps(_json["user_json"], indent=4))
 
 
 
@@ -78,4 +97,4 @@ def main():
 
 
 if __name__ == "__main__" :
-    main()
+    main(sys.argv)
