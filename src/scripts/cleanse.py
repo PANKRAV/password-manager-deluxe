@@ -14,9 +14,18 @@ debug = os.getenv("DEBUG")
 
 
 
-def main():
-    abspath = Path(os.path.abspath(__file__))
-    os.chdir(abspath.parent.parent.parent)
+def main(argsv):
+    if len(argsv) > 1 :
+        try :
+            abspath = Path(os.path.abspath(argsv[1]))
+            os.chdir(abspath)
+        except FileNotFoundError :
+            print("Target directory does not exist\nCreating target directory")
+            os.mkdir(abspath)
+            os.chdir(abspath)
+    else :
+        abspath = Path(os.path.abspath(__file__))
+        os.chdir(abspath.parent.parent.parent)
 
     if debug == "1":
         with Dir_Reset.from_string("data") as _cur :
@@ -47,6 +56,6 @@ def main():
         print("bad .env configuration")
 
 if __name__ == "__main__" :
-        main()
+        main(sys.argv)
         
     
