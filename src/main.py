@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, List
 
 
 def main(argsv : List):
-    """Main function only takes sys.argv as args"""
+    """Main function, only takes sys.argv as args"""
 
     from modules.variables import user_data
     import modules.encryption as enc

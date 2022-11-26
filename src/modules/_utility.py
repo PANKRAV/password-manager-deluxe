@@ -14,10 +14,10 @@ import functools
 import concurrent.futures
 import atexit
 from collections import deque
+import logging
+from msvcrt import getch, getche
 
 #THIRDPARTIES
-from msvcrt import getch, getche
-import logging
 
 
 

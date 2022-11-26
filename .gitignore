@@ -5,6 +5,8 @@ log/**
 logs/**
 MIGRATION/**
 .vscode
+#my venv
+pwd-manager/**
 .env
 *.code-workspace
 encryption_data/**

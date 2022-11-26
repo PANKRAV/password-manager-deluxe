@@ -16,7 +16,7 @@ For a complete version of the project with _sadly less readable code_, for now, 
 <span style="font-size:0.5em">
 <b><i>WARNINGS :</b></i>
 <br>
-1. Requirements.txt is outdated (I will update it after I finish the project)
+1. Requirements.txt is not outdated and its fixed (;
 <br>
 2. I cannot guarantee this program's safety, <b>Use at your own risk!!</b>
 </span>
