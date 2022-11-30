@@ -29,25 +29,35 @@ def main(argsv):
 
     if debug == "1":
         with Dir_Reset.from_string("data") as _cur :
-            with Dir_Reset.from_string("encryption_data") as cur :
-                for path in cur.pathlibdirs :
-                    path : Path
-                    path.unlink()
             
-            with Dir_Reset.from_string("password_data") as cur :
-                for path in cur.pathlibdirs :
-                    path : Path
-                    path.unlink()
+            try :
+                with Dir_Reset.from_string("encryption_data") as cur :
+                    for path in cur.pathlibdirs :
+                        path : Path
+                        path.unlink()
+            except :
+                print("Encryption_data directory already clear")
 
-            with Dir_Reset.from_string("user_data") as cur :
-                for path in cur.pathlibdirs :
-                    if path.stem == "users" :
-                        with path.open("wt") as w_f :
-                            w_f.write("{}")
-                            continue
+            try :
+                with Dir_Reset.from_string("password_data") as cur :
+                    for path in cur.pathlibdirs :
+                        path : Path
+                        path.unlink()
+            except :
+                print("Password_data directory already clear")
 
-                    path : Path
-                    path.unlink()
+            try :
+                with Dir_Reset.from_string("user_data") as cur :
+                    for path in cur.pathlibdirs :
+                        if path.stem == "users" :
+                            with path.open("wt") as w_f :
+                                w_f.write("{}")
+                                continue
+
+                        path : Path
+                        path.unlink()
+            except :
+                print("Encryption_data directory already clear")
 
     elif debug == "0" :
         print("debug setting is turned off")
