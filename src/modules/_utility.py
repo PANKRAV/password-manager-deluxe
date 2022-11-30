@@ -16,6 +16,7 @@ import atexit
 from collections import deque
 import logging
 from msvcrt import getch, getche
+from _thread import interrupt_main
 
 #THIRDPARTIES
 
@@ -87,6 +88,8 @@ def _init() -> Dict:
                         pass
         
     user_data_init()
+    GlobClock(GlobClock.default)
+    GlobClock._instance.start()
 
 def _quit() -> None :
     sys.exit(0)
@@ -278,6 +281,58 @@ def timeit(func : function, debug : bool = True, verbose : bool = False, *args :
 
 def loop_switch() -> None :
     os.system("cls||clear")
+    GlobClock.reset()
+
+class GlobClock(object) :
+    
+    _instance = None
+    default = 600
+
+    def __new__(cls, *args, **kwargs) -> ...:
+        if cls._instance is None :
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+
+    def __init__(self, _interval = default) -> None:
+        self._interval = _interval
+        self.active = False
+
+
+    def start(self) :
+        if not self.active :
+            self.timer = threading.Timer(self._interval, self.timeout)
+            self.timer.daemon = True
+            self.active = True
+            self.timer.start()
+
+        else :
+            raise Exception("GlobTimer can only be started once")
+
+
+    @classmethod
+    def reset(cls) :
+        cls._instance : GlobClock
+        if cls._instance is not None :
+            cls._instance.timer.cancel()
+            cls._instance.timer = threading.Timer(cls._instance._interval, cls._instance.timeout)
+            cls._instance.timer.daemon = True
+            cls._instance.timer.start()
+        else :
+            logging.debug("Creating GlobClock single instance")
+            cls(cls.default)
+            cls._instance.start()
+
+
+    def timeout(self) :
+        os.system("cls||clear")
+        print("\n10 minutes with no input elapsed\nTimeout occurred")
+        print("Exiting...")
+        interrupt_main()
+        print("Input anything to exit :")
+        sys.exit()
+    
+
 
 
 class Timeout:
